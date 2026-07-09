@@ -1,0 +1,125 @@
+{
+  "systems": [
+    {
+      "id": "1",
+      "name": "מערכת א"
+    },
+    {
+      "id": "2",
+      "name": "מערכת ב"
+    },
+    {
+      "id": "3",
+      "name": "מערכת ג"
+    }
+  ],
+  "faultTypes": [
+    {
+      "id": "1",
+      "name": "תקלת חשמל"
+    },
+    {
+      "id": "2",
+      "name": "תקלה מכנית"
+    },
+    {
+      "id": "3",
+      "name": "תקלת תוכנה"
+    },
+    {
+      "id": "4",
+      "name": "תקשורת"
+    }
+  ],
+  "bases": [
+    {
+      "id": "1",
+      "name": "בסיס צפון"
+    },
+    {
+      "id": "2",
+      "name": "בסיס דרום"
+    },
+    {
+      "id": "3",
+      "name": "בסיס מרכז"
+    },
+    {
+      "id": "4",
+      "name": "בסיס מזרח"
+    }
+  ],
+  "calls": [
+    {
+      "id": "1",
+      "name": "קריאה 101"
+    },
+    {
+      "id": "2",
+      "name": "קריאה 102"
+    },
+    {
+      "id": "3",
+      "name": "קריאה 103"
+    }
+  ],
+  "tickets": [
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T07:39:52.649Z",
+      "id": "5VoZLbwnWEw"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T07:40:02.280Z",
+      "id": "XpcPLlwgCGM"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T11:41:14.230Z",
+      "id": "s010V5QEHZ8"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T11:44:41.021Z",
+      "id": "KIAKDCyRlK0"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T12:15:28.898Z",
+      "id": "LyeGMgAAN7Y"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T12:15:39.169Z",
+      "id": "wzPlrTky_Eg"
+    },
+    {
+      "systemName": "מערכת ב",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס דרום",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-09T11:25:48.037Z",
+      "id": "PwYq08iM7Tw"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
