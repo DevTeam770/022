@@ -93,23 +93,18 @@ export function NewTicketPage() {
               </Select>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="priority">עדיפות</Label>
-                <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="בחר עדיפות" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITIES.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">תיאור התקלה *</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="תאר את הבעיה בפירוט"
+                rows={5}
+              />
+            </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="personalId">מס' אישי</Label>
                 <Input
@@ -119,9 +114,7 @@ export function NewTicketPage() {
                   placeholder="מספר אישי"
                 />
               </div>
-            </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="phone">מס' טלפון</Label>
                 <Input
@@ -141,26 +134,31 @@ export function NewTicketPage() {
                   placeholder="נייד"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priority">עדיפות</Label>
+                <Select value={priority} onValueChange={setPriority}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר עדיפות" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRIORITIES.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">מיקום</Label>
+              <Label htmlFor="location">מיקום / מחלקה</Label>
               <Input
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="מיקום / מחלקה"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">תיאור התקלה *</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="תאר את הבעיה בפירוט"
-                rows={5}
+                placeholder="לדוג': קריה, בניין 3, קומה 2"
               />
             </div>
 
