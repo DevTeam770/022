@@ -1,0 +1,262 @@
+{
+  "systems": [
+    {
+      "id": "1",
+      "name": "מערכת א"
+    },
+    {
+      "id": "2",
+      "name": "מערכת ב"
+    },
+    {
+      "id": "3",
+      "name": "מערכת ג"
+    }
+  ],
+  "faultTypes": [
+    {
+      "id": "1",
+      "name": "תקלת חשמל"
+    },
+    {
+      "id": "2",
+      "name": "תקלה מכנית"
+    },
+    {
+      "id": "3",
+      "name": "תקלת תוכנה"
+    },
+    {
+      "id": "4",
+      "name": "תקשורת"
+    }
+  ],
+  "bases": [
+    {
+      "id": "1",
+      "name": "בסיס צפון"
+    },
+    {
+      "id": "2",
+      "name": "בסיס דרום"
+    },
+    {
+      "id": "3",
+      "name": "בסיס מרכז"
+    },
+    {
+      "id": "4",
+      "name": "בסיס מזרח"
+    }
+  ],
+  "calls": [
+    {
+      "id": "1",
+      "name": "קריאה 101"
+    },
+    {
+      "id": "2",
+      "name": "קריאה 102"
+    },
+    {
+      "id": "3",
+      "name": "קריאה 103"
+    }
+  ],
+  "admins": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "admin123"
+    }
+  ],
+  "tickets": [
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T07:39:52.649Z",
+      "id": "5VoZLbwnWEw"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T07:40:02.280Z",
+      "id": "XpcPLlwgCGM"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T11:41:14.230Z",
+      "id": "s010V5QEHZ8"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T11:44:41.021Z",
+      "id": "KIAKDCyRlK0"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T12:15:28.898Z",
+      "id": "LyeGMgAAN7Y"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-08T12:15:39.169Z",
+      "id": "wzPlrTky_Eg"
+    },
+    {
+      "systemName": "מערכת ב",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס דרום",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-09T11:25:48.037Z",
+      "id": "PwYq08iM7Tw"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-20T08:17:44.174Z",
+      "id": "ybGZsIPxwCk"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס צפון",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-20T08:20:04.805Z",
+      "id": "vEVZYpOIZf8"
+    },
+    {
+      "systemName": "מערכת א",
+      "faultType": "תקלת חשמל",
+      "base": "בסיס דרום",
+      "call": "קריאה 101",
+      "createdAt": "2026-07-20T08:24:52.820Z",
+      "id": "DEa6qHPLDJQ"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "עןורעוןרעןורקעהוןרקעןםורק",
+      "personalId": "635874576451674",
+      "phone": "3535",
+      "mobile": "3ר3343",
+      "location": "ר3ר231ר2134ר1234",
+      "createdAt": "2026-07-20T08:55:49.268Z",
+      "id": "H9c78OD1iAE"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "",
+      "personalId": "",
+      "phone": "",
+      "mobile": "",
+      "location": "",
+      "createdAt": "2026-07-20T08:58:16.900Z",
+      "id": "zeu9gou2LRI"
+    },
+    {
+      "systemName": "מערכת ב",
+      "description": "גכיגרחי",
+      "personalId": "עירדי",
+      "phone": "גדיקגדיקדי",
+      "mobile": "דגידגירדי",
+      "location": "יק'דיגקיקגש",
+      "createdAt": "2026-07-20T09:18:56.431Z",
+      "id": "Poiry2SB7Wk"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "חסר חיבורים לטלפונים",
+      "personalId": "8674576",
+      "phone": "5113770",
+      "mobile": "0507557543",
+      "location": "בור",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2026-07-20T09:28:24.700Z",
+      "id": "0wwRPsg7rNM"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "חסר חיבור לטלפון",
+      "personalId": "8674576",
+      "phone": "5113770",
+      "mobile": "0507557543",
+      "location": "בור",
+      "status": "open",
+      "priority": "medium",
+      "createdBy": "yaakov.kaper@gmail.com",
+      "createdByName": "yaakov.kaper",
+      "createdAt": "2026-07-20T09:37:16.641Z",
+      "id": "jkyvVvQdQ8c"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "תקלה בחיבור לטלפון",
+      "personalId": "8674576",
+      "phone": "5113770",
+      "mobile": "0507557543",
+      "location": "בור",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2026-07-20T09:41:36.392Z",
+      "id": "8MxqaXRvMXc"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "טטלטל",
+      "personalId": "רכיכריכ",
+      "phone": "יכיחכעח",
+      "mobile": "יכיחכי",
+      "location": "יכיכיכי",
+      "status": "open",
+      "priority": "medium",
+      "createdBy": "yaakov.kaper@gmail.com",
+      "createdByName": "yaakov.kaper",
+      "createdAt": "2026-07-22T07:46:58.858Z",
+      "id": "cTIT9ILn_y0"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "",
+      "personalId": "",
+      "phone": "",
+      "mobile": "",
+      "location": "",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2026-07-22T09:54:49.375Z",
+      "id": "HHVswCAdU60"
+    },
+    {
+      "systemName": "מערכת א",
+      "description": "הגהגהגנגדנג",
+      "personalId": "כ'כ'כ'",
+      "phone": "'כ'כ'",
+      "mobile": "כ'כ'כ'",
+      "location": "אא4אט",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2026-07-22T09:59:29.885Z",
+      "id": "qFc0W14FxfY"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
