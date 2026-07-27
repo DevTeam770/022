@@ -15,9 +15,11 @@ export function AdminLoginPage() {
   const { login } = useAuthStore();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError("");
     if (!username || !password) {
       toast.error("נא להזין שם משתמש וסיסמה");
       return;
@@ -32,10 +34,14 @@ export function AdminLoginPage() {
         toast.success("התחברת בהצלחה כמנהל");
         navigate("/admin/dashboard");
       } else {
-        toast.error("שם משתמש או סיסמה שגויים");
+        const message = "שם המשתמש או הסיסמה שגויים. נסה שוב.";
+        setLoginError(message);
+        toast.error(message);
       }
     } catch {
-      toast.error("שגיאה בחיבור לשרת");
+      const message = "לא ניתן להתחבר לשרת. נסה שוב מאוחר יותר.";
+      setLoginError(message);
+      toast.error(message);
     }
   };
 
@@ -58,7 +64,12 @@ export function AdminLoginPage() {
                 type="text"
                 placeholder="admin"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setLoginError("");
+                }}
+                aria-invalid={Boolean(loginError)}
+                className={`caret-blue-700 ${loginError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
             </div>
             <div className="space-y-2">
@@ -68,9 +79,19 @@ export function AdminLoginPage() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError("");
+                }}
+                aria-invalid={Boolean(loginError)}
+                className={`caret-blue-700 ${loginError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
               />
             </div>
+            {loginError && (
+              <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                {loginError}
+              </p>
+            )}
             <Button type="submit" className="w-full">
               התחבר
             </Button>

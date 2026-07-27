@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { X, Plus, Bell } from "lucide-react";
+import { X, Plus, Bell, ClipboardPlus, MapPin, Send, UserRound } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -29,12 +30,19 @@ export function Header() {
   const [personalId, setPersonalId] = useState("");
   const [phone, setPhone] = useState("");
   const [mobile, setMobile] = useState("");
-  const [location, setLocation] = useState("");
+  const [building, setBuilding] = useState("");
+  const [floor, setFloor] = useState("");
+  const [room, setRoom] = useState("");
+  const [faultType, setFaultType] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const [showValidation, setShowValidation] = useState(false);
 
   const [systems, setSystems] = useState([]);
+  const [faultTypes, setFaultTypes] = useState([]);
 
   useEffect(() => {
     fetch(`${API_URL}/systems`).then((r) => r.json()).then(setSystems);
+    fetch(`${API_URL}/faultTypes`).then((r) => r.json()).then(setFaultTypes);
   }, []);
 
   function handleClose() {
@@ -44,19 +52,32 @@ export function Header() {
     setPersonalId("");
     setPhone("");
     setMobile("");
-    setLocation("");
+    setBuilding("");
+    setFloor("");
+    setRoom("");
+    setFaultType("");
+    setShowValidation(false);
+    setPriority("medium");
   }
 
   async function handleSubmit() {
+    const hasMissingRequiredFields = !systemName || !description || !personalId || !phone || !mobile;
+
+    if (hasMissingRequiredFields) {
+      setShowValidation(true);
+      return;
+    }
+
     const ticket = {
       systemName,
+      faultType,
       description,
       personalId,
       phone,
       mobile,
-      location,
+      location: [building, floor && `קומה ${floor}`, room && `חדר ${room}`].filter(Boolean).join(", "),
       status: "open",
-      priority: "medium",
+      priority,
       createdBy: user?.email,
       createdByName: user?.fullName,
       createdAt: new Date().toISOString(),
@@ -74,10 +95,7 @@ export function Header() {
     }
   }
 
-  const selectClass =
-    "w-full rounded-md border-2 border-blue-500 bg-white px-4 py-2 text-lg text-blue-900 focus:outline-none focus:border-blue-700";
-  const inputClass =
-    "w-full rounded-md border-2 border-blue-500 bg-white px-4 py-2 text-lg text-blue-900 placeholder:text-blue-400 focus:outline-none focus:border-blue-700";
+  const fieldClass = "h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 caret-blue-700 focus:border-blue-500 focus:ring-blue-500";
 
   return (
     <>
@@ -111,77 +129,141 @@ export function Header() {
         </div>
       </header>
 
-      <Dialog open={isNewTicketOpen} onOpenChange={handleClose}>
-        <DialogContent className="p-0 overflow-hidden border-0 bg-white [&>button]:hidden max-w-2xl w-full">
-          {/* Blue topbar */}
-          <div className="relative flex items-center justify-center bg-blue-900 px-4 py-4">
-            <button
-              onClick={handleClose}
-              className="absolute left-4 text-white hover:text-blue-300 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <DialogHeader className="m-0 p-0">
-              <DialogTitle className="text-white text-xl font-bold text-center">יצירת תקלה חדשה</DialogTitle>
+      <Dialog open={isNewTicketOpen} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="max-h-[92vh] w-[calc(100%-2rem)] max-w-3xl gap-0 overflow-y-auto rounded-2xl border-0 bg-white p-0 shadow-2xl [&>button]:hidden" dir="rtl">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-blue-100 bg-gradient-to-l from-blue-700 to-blue-600 px-6 py-5 text-white">
+            <DialogHeader className="space-y-1 text-right">
+              <DialogTitle className="flex items-center gap-3 text-xl font-bold">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+                  <ClipboardPlus className="h-5 w-5" />
+                </span>
+                יצירת תקלה חדשה
+              </DialogTitle>
+              <p className="pr-[52px] text-sm text-blue-100">נשמור את הפרטים ונעביר אותם לצוות המתאים</p>
             </DialogHeader>
+            <Button onClick={handleClose} variant="ghost" size="icon" className="shrink-0 text-white hover:bg-white/15 hover:text-white">
+              <X className="h-5 w-5" />
+              <span className="sr-only">סגירה</span>
+            </Button>
           </div>
 
-          {/* White body */}
-          <div className="px-8 py-6 flex flex-col gap-4" dir="rtl">
-            <Select value={systemName} onValueChange={setSystemName}>
-              <SelectTrigger className={selectClass}>
-                <SelectValue placeholder="שם מערכת" />
-              </SelectTrigger>
-              <SelectContent>
-                {systems.map((item) => (
-                  <SelectItem key={item.id} value={item.name}>
-                    {item.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <form onSubmit={(event) => { event.preventDefault(); handleSubmit(); }} className="p-6 sm:p-8">
+            <section className="space-y-5">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <ClipboardPlus className="h-4 w-4 text-blue-600" />
+                <h2 className="font-semibold text-slate-800">פרטי התקלה</h2>
+              </div>
 
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="תיאור תקלה"
-              className={inputClass}
-              rows={3}
-            />
-            <Input
-              value={personalId}
-              onChange={(e) => setPersonalId(e.target.value)}
-              placeholder="מס' אישי"
-              className={inputClass}
-            />
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="מס' טלפון"
-              className={inputClass}
-            />
-            <Input
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              placeholder="מס' נייד"
-              className={inputClass}
-            />
-            <Input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="מיקום"
-              className={inputClass}
-            />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-system" className="font-medium text-slate-700">רשת <span className="text-red-500">*</span></Label>
+                  <Select value={systemName} onValueChange={setSystemName}>
+                    <SelectTrigger id="ticket-system" aria-invalid={showValidation && !systemName} className={`${fieldClass} ${showValidation && !systemName ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}>
+                      <SelectValue placeholder="בחר רשת" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {systems.map((item) => (
+                        <SelectItem key={item.id} value={item.name}>{item.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {showValidation && !systemName && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
 
-            {systemName && (
-              <Button
-                className="w-full bg-blue-900 text-white hover:bg-blue-800 text-lg py-6 mt-2"
-                onClick={handleSubmit}
-              >
-                סיום
-              </Button>
-            )}
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-fault-type" className="font-medium text-slate-700">סוג תקלה</Label>
+                  <Select value={faultType} onValueChange={setFaultType}>
+                    <SelectTrigger id="ticket-fault-type" className={fieldClass}>
+                      <SelectValue placeholder="בחר סוג תקלה" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {faultTypes.map((item) => (
+                        <SelectItem key={item.id} value={item.name}>{item.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ticket-description" className="font-medium text-slate-700">תיאור התקלה <span className="text-red-500">*</span></Label>
+                <Textarea
+                  id="ticket-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="תאר את הבעיה בפירוט כדי שנוכל לטפל בה במהירות"
+                  aria-invalid={showValidation && !description}
+                  className={`min-h-28 resize-none border-slate-200 text-slate-900 placeholder:text-slate-400 caret-blue-700 focus:border-blue-500 focus:ring-blue-500 ${showValidation && !description ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+                />
+                {showValidation && !description && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+              </div>
+            </section>
+
+            <section className="mt-8 space-y-5">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <UserRound className="h-4 w-4 text-blue-600" />
+                <h2 className="font-semibold text-slate-800">פרטי יצירת קשר</h2>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-personal-id" className="font-medium text-slate-700">מספר אישי <span className="text-red-500">*</span></Label>
+                  <Input id="ticket-personal-id" aria-invalid={showValidation && !personalId} value={personalId} onChange={(e) => setPersonalId(e.target.value)} placeholder="מספר אישי" className={`${fieldClass} ${showValidation && !personalId ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`} />
+                  {showValidation && !personalId && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-phone" className="font-medium text-slate-700">טלפון אדום <span className="text-red-500">*</span></Label>
+                  <Input id="ticket-phone" type="tel" inputMode="tel" pattern="[0-9*+#-]*" aria-invalid={showValidation && !phone} value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9*+#-]/g, ""))} placeholder="מספר טלפון" className={`${fieldClass} ${showValidation && !phone ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`} />
+                  {showValidation && !phone && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-mobile" className="font-medium text-slate-700">נייד <span className="text-red-500">*</span></Label>
+                  <Input id="ticket-mobile" type="tel" inputMode="tel" pattern="[0-9*+#-]*" aria-invalid={showValidation && !mobile} value={mobile} onChange={(e) => setMobile(e.target.value.replace(/[^0-9*+#-]/g, ""))} placeholder="מספר נייד" className={`${fieldClass} ${showValidation && !mobile ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`} />
+                  {showValidation && !mobile && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-8 space-y-5 border-b border-slate-100 pb-8">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-blue-600" />
+                <h2 className="font-semibold text-slate-800">מיקום</h2>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-building" className="font-medium text-slate-700">בניין</Label>
+                  <Select value={building} onValueChange={setBuilding}>
+                    <SelectTrigger id="ticket-building" className={fieldClass}><SelectValue placeholder="בחר בניין" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="מגדל צפוני">מגדל צפוני</SelectItem>
+                      <SelectItem value="מגדל דרומי">מגדל דרומי</SelectItem>
+                      <SelectItem value="כנרית">כנרית</SelectItem>
+                      <SelectItem value="הראל">הראל</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-floor" className="font-medium text-slate-700">קומה</Label>
+                  <Input id="ticket-floor" value={floor} onChange={(e) => setFloor(e.target.value)} placeholder="מספר קומה" className={fieldClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ticket-room" className="font-medium text-slate-700">חדר</Label>
+                  <Input id="ticket-room" value={room} onChange={(e) => setRoom(e.target.value)} placeholder="מספר חדר" className={fieldClass} />
+                </div>
+              </div>
+            </section>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
+              <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                <Button type="button" variant="outline" onClick={handleClose} className="h-11 border-slate-200 text-slate-700">ביטול</Button>
+                <Button type="submit" className="h-11 gap-2 bg-blue-600 px-6 hover:bg-blue-700">
+                  <Send className="h-4 w-4" />
+                  פתיחת תקלה
+                </Button>
+              </div>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </>

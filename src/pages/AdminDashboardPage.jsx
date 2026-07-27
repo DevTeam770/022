@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Ticket, Users, Shield, LogOut, Activity, AlertCircle, Clock, LayoutDashboard, Settings, BarChart3, FileText } from "lucide-react";
+import { Ticket, Users, Shield, LogOut, Activity, Clock, LayoutDashboard, Settings, BarChart3, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +36,8 @@ export function AdminDashboardPage() {
   const { logout } = useAuthStore();
   const [tickets, setTickets] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [activePanel, setActivePanel] = useState(null);
+  const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
 
   const fetchData = () => {
     fetch(`${API_URL}/tickets`).then((r) => r.json()).then(setTickets);
@@ -59,6 +62,20 @@ export function AdminDashboardPage() {
 
   const bySystem = countByKey(tickets, "systemName");
   const byStatus = countByKey(tickets, "status");
+  const panelTickets = activePanel?.type === "system"
+    ? tickets.filter((ticket) => (ticket.systemName || "לא צוין") === activePanel.value)
+    : activePanel?.type === "status"
+      ? tickets.filter((ticket) => (ticket.status || "לא צוין") === activePanel.value)
+      : tickets;
+  const panelTitle = activePanel?.type === "users"
+    ? "משתמשים מדווחים"
+    : activePanel?.type === "admins"
+      ? "חשבונות מנהל"
+      : activePanel?.type === "system"
+        ? `תקלות ברשת ${activePanel.value}`
+        : activePanel?.type === "status"
+          ? `תקלות בסטטוס ${statusLabels[activePanel.value] || activePanel.value}`
+          : "כל התקלות";
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8" dir="rtl">
@@ -71,7 +88,7 @@ export function AdminDashboardPage() {
               <p className="mt-2 text-lg text-white/90">סקירת נתוני המערכת בזמן אמת</p>
             </div>
             <Button 
-              onClick={handleLogout} 
+              onClick={() => setIsLogoutConfirmationOpen(true)} 
               className="gap-2 bg-white/20 text-white backdrop-blur-sm hover:bg-white/30 border border-white/30 shadow-lg"
             >
               <LogOut className="h-5 w-5" />
@@ -82,7 +99,7 @@ export function AdminDashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="group relative overflow-hidden border-0 bg-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+          <Card onClick={() => setActivePanel({ type: "tickets" })} role="button" tabIndex={0} onKeyDown={(event) => event.key === "Enter" && setActivePanel({ type: "tickets" })} className="group relative cursor-pointer overflow-hidden border-0 bg-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
             <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-rose-500 to-orange-500" />
             <CardHeader className="relative flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-xl font-semibold text-slate-800">כמות תקלות</CardTitle>
@@ -96,7 +113,7 @@ export function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-0 bg-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+          <Card onClick={() => setActivePanel({ type: "users" })} role="button" tabIndex={0} onKeyDown={(event) => event.key === "Enter" && setActivePanel({ type: "users" })} className="group relative cursor-pointer overflow-hidden border-0 bg-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
             <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
             <CardHeader className="relative flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-xl font-semibold text-slate-800">משתמשים</CardTitle>
@@ -110,7 +127,7 @@ export function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-0 bg-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+          <Card onClick={() => setActivePanel({ type: "admins" })} role="button" tabIndex={0} onKeyDown={(event) => event.key === "Enter" && setActivePanel({ type: "admins" })} className="group relative cursor-pointer overflow-hidden border-0 bg-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
             <div className="absolute top-0 right-0 h-1 w-full bg-gradient-to-r from-violet-500 to-purple-500" />
             <CardHeader className="relative flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-xl font-semibold text-slate-800">מנהלים</CardTitle>
@@ -146,8 +163,12 @@ export function AdminDashboardPage() {
                 ) : (
                   Object.entries(bySystem).map(([system, count], index) => (
                     <div 
-                      key={system} 
-                      className="group flex items-center justify-between rounded-xl bg-gradient-to-r from-slate-50 to-white p-4 transition-all hover:shadow-md"
+                      key={system}
+                      onClick={() => setActivePanel({ type: "system", value: system })}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => event.key === "Enter" && setActivePanel({ type: "system", value: system })}
+                      className="group flex cursor-pointer items-center justify-between rounded-xl bg-gradient-to-r from-slate-50 to-white p-4 transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-bold text-sm">
@@ -184,8 +205,12 @@ export function AdminDashboardPage() {
                 ) : (
                   Object.entries(byStatus).map(([status, count]) => (
                     <div 
-                      key={status} 
-                      className="group flex items-center justify-between rounded-xl bg-gradient-to-r from-slate-50 to-white p-4 transition-all hover:shadow-md"
+                      key={status}
+                      onClick={() => setActivePanel({ type: "status", value: status })}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => event.key === "Enter" && setActivePanel({ type: "status", value: status })}
+                      className="group flex cursor-pointer items-center justify-between rounded-xl bg-gradient-to-r from-slate-50 to-white p-4 transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`h-4 w-4 rounded-full ${statusColors[status] || "bg-slate-400"} shadow-md`} />
@@ -201,49 +226,43 @@ export function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Recent Tickets */}
-        <Card className="border-0 bg-white shadow-xl">
-          <CardHeader className="border-b border-slate-100 pb-6">
-            <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
-              <div className="rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 p-2 text-white">
-                <AlertCircle className="h-5 w-5" />
-              </div>
-              תקלות אחרונות
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {tickets.slice(0, 5).map((ticket) => (
-                <div 
-                  key={ticket.id} 
-                  className="group flex items-center justify-between rounded-xl border border-slate-100 bg-gradient-to-r from-white to-slate-50 p-5 shadow-sm transition-all hover:shadow-md"
-                >
-                  <div className="flex-1">
-                    <p className="font-bold text-slate-800 text-lg">{ticket.systemName || "ללא מערכת"}</p>
-                    <p className="mt-1 text-sm text-slate-600">{ticket.faultType || "ללא סוג תקלה"}</p>
-                    <p className="mt-1 text-slate-500 line-clamp-1">{ticket.description || "אין תיאור"}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-400 font-medium">
-                      {new Date(ticket.createdAt).toLocaleDateString("he-IL")}
-                    </span>
-                    <Badge className={`${statusColors[ticket.status] || "bg-slate-500"} text-white border-0 shadow-md`}>
-                      {statusLabels[ticket.status] || ticket.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-              {tickets.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                  <AlertCircle className="h-12 w-12 mb-4 opacity-50" />
-                  <p>אין תקלות במערכת</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <Dialog open={isLogoutConfirmationOpen} onOpenChange={setIsLogoutConfirmationOpen}>
+        <DialogContent className="max-w-md [&>button]:left-4 [&>button]:right-auto" dir="rtl">
+          <DialogHeader className="text-right sm:text-right">
+            <DialogTitle className="text-right text-xl font-bold text-slate-800">התנתקות מלוח המנהל</DialogTitle>
+          </DialogHeader>
+          <p className="text-right text-slate-600">האם אתה בטוח שברצונך להתנתק?</p>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => setIsLogoutConfirmationOpen(false)}>ביטול</Button>
+            <Button type="button" onClick={handleLogout} className="bg-rose-600 hover:bg-rose-700">התנתק</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(activePanel)} onOpenChange={(open) => !open && setActivePanel(null)}>
+        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto" dir="rtl">
+          <DialogHeader className="border-b border-slate-100 pb-4 text-right">
+            <DialogTitle className="text-xl font-bold text-slate-800">{panelTitle}</DialogTitle>
+          </DialogHeader>
+          {activePanel?.type === "admins" ? (
+            <div className="space-y-3">
+              {admins.map((admin) => <div key={admin.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4 font-medium text-slate-700">{admin.username}</div>)}
+            </div>
+          ) : activePanel?.type === "users" ? (
+            <div className="space-y-3">
+              {[...new Set(tickets.map((ticket) => ticket.createdByName || ticket.createdBy).filter(Boolean))].map((user) => <div key={user} className="rounded-lg border border-slate-100 bg-slate-50 p-4 font-medium text-slate-700">{user}</div>)}
+              {!tickets.some((ticket) => ticket.createdByName || ticket.createdBy) && <p className="py-8 text-center text-slate-500">אין משתמשים להצגה</p>}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {panelTickets.map((ticket) => <div key={ticket.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4"><p className="font-semibold text-slate-800">{ticket.systemName || "ללא רשת"}</p><p className="mt-1 text-sm text-slate-600">{ticket.description || "אין תיאור"}</p><p className="mt-2 text-xs text-slate-500">{statusLabels[ticket.status] || ticket.status}</p></div>)}
+              {panelTickets.length === 0 && <p className="py-8 text-center text-slate-500">אין תקלות להצגה</p>}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
