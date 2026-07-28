@@ -1,0 +1,115 @@
+{
+  "systems": [
+    {
+      "id": "1",
+      "name": "שביל"
+    },
+    {
+      "id": "2",
+      "name": "נתיב"
+    },
+    {
+      "id": "3",
+      "name": "אחר"
+    }
+  ],
+  "faultTypes": [
+    {
+      "id": "1",
+      "name": "תקלת חשמל"
+    },
+    {
+      "id": "2",
+      "name": "תקלה מכנית"
+    },
+    {
+      "id": "3",
+      "name": "תקלת תוכנה"
+    },
+    {
+      "id": "4",
+      "name": "תקשורת"
+    }
+  ],
+  "bases": [
+    {
+      "id": "1",
+      "name": "בסיס צפון"
+    },
+    {
+      "id": "2",
+      "name": "בסיס דרום"
+    },
+    {
+      "id": "3",
+      "name": "בסיס מרכז"
+    },
+    {
+      "id": "4",
+      "name": "בסיס מזרח"
+    }
+  ],
+  "calls": [
+    {
+      "id": "1",
+      "name": "קריאה 101"
+    },
+    {
+      "id": "2",
+      "name": "קריאה 102"
+    },
+    {
+      "id": "3",
+      "name": "קריאה 103"
+    }
+  ],
+  "admins": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "admin123"
+    }
+  ],
+  "users": [
+    {
+      "fullName": "יצחקוב ארלן",
+      "personalId": "s0987657",
+      "password": "123456",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:13:24.880Z",
+      "id": "riyVlv7-H3Q"
+    },
+    {
+      "fullName": "ביטון עדן",
+      "personalId": "s7585898",
+      "password": "456789",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:15:14.799Z",
+      "id": "tpPFuFKKKYk"
+    },
+    {
+      "fullName": "רזובסקי אמיר",
+      "personalId": "m5859856",
+      "password": "123098",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:18:19.735Z",
+      "id": "SrhiJ1ZOC7E"
+    }
+  ],
+  "tickets": [
+    {
+      "systemName": "שביל",
+      "faultType": "תקלת חשמל",
+      "description": "אני מוכרח לומר לארלן שהוא פשוט אלוף! יאללה רק תניח תפילין!",
+      "personalId": "78658648",
+      "phone": "4748468",
+      "mobile": "4567868",
+      "location": "מגדל צפוני, קומה 67, חדר 4",
+      "status": "open",
+      "priority": "medium",
+      "createdAt": "2026-07-27T09:34:12.039Z",
+      "id": "XWzVcfy3KgY"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
