@@ -7,6 +7,7 @@ import { TicketsPage } from "@/pages/TicketsPage";
 import { NewTicketPage } from "@/pages/NewTicketPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { CollectionsPage } from "@/pages/CollectionsPage";
+import { TechnicianLoginPage } from "@/pages/TechnicianLoginPage";
 import { TechnicianDashboardPage } from "@/pages/TechnicianDashboardPage";
 import { AdminLoginPage } from "@/pages/AdminLoginPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
@@ -18,7 +19,7 @@ function ProtectedRoute() {
 
 function TechnicianRoute() {
   const { isAuthenticated, role } = useAuthStore();
-  return isAuthenticated && role === "technician" ? <Outlet /> : <Navigate to="/" replace />;
+  return isAuthenticated && role === "technician" ? <Outlet /> : <Navigate to="/technician/login" replace />;
 }
 
 function AdminRoute() {
@@ -40,10 +41,9 @@ function App() {
             <Route path="/collections" element={<CollectionsPage />} />
           </Route>
         </Route>
+        <Route path="/technician/login" element={<TechnicianLoginPage />} />
         <Route element={<TechnicianRoute />}>
-          <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<TechnicianDashboardPage />} />
-          </Route>
+          <Route path="/technician/dashboard" element={<TechnicianDashboardPage />} />
         </Route>
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route element={<AdminRoute />}>

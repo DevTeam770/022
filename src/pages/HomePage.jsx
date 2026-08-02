@@ -85,12 +85,15 @@ export function HomePage() {
         <DialogContent className="max-h-[92vh] w-[calc(100%-2rem)] max-w-xl gap-0 overflow-y-auto rounded-2xl border-0 bg-white p-0 shadow-2xl [&>button]:hidden" dir="rtl">
           {/* Blue topbar */}
           <div className="relative flex items-center justify-start bg-blue-900 px-4 py-4">
-            <button
+            <Button
               onClick={handleClose}
-              className="absolute left-4 text-white hover:text-blue-300 transition-colors"
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 text-white hover:bg-white/15 hover:text-blue-300"
             >
               <X className="h-5 w-5" />
-            </button>
+              <span className="sr-only">סגירה</span>
+            </Button>
             <DialogHeader className="m-0 p-0 text-right sm:text-right" dir="rtl">
               <DialogTitle className="text-white text-xl font-bold text-right" dir="rtl">
                 {openTile?.title}
@@ -133,7 +136,7 @@ export function HomePage() {
                 {showValidation && !newName && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
                 <div className="flex flex-col-reverse gap-3 sm:flex-row">
                   <Button type="button" variant="outline" onClick={handleClose} className="h-11">ביטול</Button>

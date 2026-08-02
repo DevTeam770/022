@@ -349,21 +349,24 @@ export function NewTicketPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-100">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => navigate("/tickets")}
-                      className="gap-2 h-11 px-6"
-                    >
-                      <X className="h-4 w-4" />
-                      ביטול
-                    </Button>
-                    <Button type="submit" className="gap-2 h-11 px-8 bg-blue-600 hover:bg-blue-700">
-                      <Save className="h-4 w-4" />
-                      פתח תקלה
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                  <div className="flex flex-col-reverse gap-3 pt-4 border-t border-slate-100 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
+                    <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => navigate("/tickets")}
+                        className="gap-2 h-11 px-6"
+                      >
+                        <X className="h-4 w-4" />
+                        ביטול
+                      </Button>
+                      <Button type="submit" className="gap-2 h-11 px-8 bg-blue-600 hover:bg-blue-700">
+                        <Save className="h-4 w-4" />
+                        פתח תקלה
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </form>
               </CardContent>

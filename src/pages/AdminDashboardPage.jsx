@@ -411,15 +411,15 @@ export function AdminDashboardPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-user-name">שם מלא</Label>
+              <Label htmlFor="new-user-name">שם מלא <span className="text-red-500">*</span></Label>
               <Input id="new-user-name" value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="שם מלא" className="caret-blue-700" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-user-personal-id">מספר אישי</Label>
+              <Label htmlFor="new-user-personal-id">מספר אישי <span className="text-red-500">*</span></Label>
               <Input id="new-user-personal-id" value={newUserPersonalId} onChange={(e) => setNewUserPersonalId(e.target.value)} placeholder="מספר אישי" className="caret-blue-700" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-user-password">סיסמה</Label>
+              <Label htmlFor="new-user-password">סיסמה <span className="text-red-500">*</span></Label>
               <Input id="new-user-password" type="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="••••••••" className="caret-blue-700" />
             </div>
             <div className="space-y-2">
@@ -436,9 +436,12 @@ export function AdminDashboardPage() {
             </div>
             {createUserError && <p className="text-sm font-medium text-red-600">{createUserError}</p>}
           </div>
-          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={closeCreateUser}>ביטול</Button>
-            <Button type="button" onClick={handleCreateUser} className="bg-blue-600 hover:bg-blue-700">יצירת משתמש</Button>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button type="button" variant="outline" onClick={closeCreateUser}>ביטול</Button>
+              <Button type="button" onClick={handleCreateUser} className="bg-blue-600 hover:bg-blue-700">יצירת משתמש</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -450,18 +453,21 @@ export function AdminDashboardPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-password-new">סיסמה חדשה</Label>
+              <Label htmlFor="reset-password-new">סיסמה חדשה <span className="text-red-500">*</span></Label>
               <Input id="reset-password-new" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" className="caret-blue-700" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reset-password-confirm">אימות סיסמה</Label>
+              <Label htmlFor="reset-password-confirm">אימות סיסמה <span className="text-red-500">*</span></Label>
               <Input id="reset-password-confirm" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="caret-blue-700" />
             </div>
             {resetPasswordError && <p className="text-sm font-medium text-red-600">{resetPasswordError}</p>}
           </div>
-          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={closeResetPassword}>ביטול</Button>
-            <Button type="button" onClick={handleResetPassword} className="bg-blue-600 hover:bg-blue-700">איפוס סיסמה</Button>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button type="button" variant="outline" onClick={closeResetPassword}>ביטול</Button>
+              <Button type="button" onClick={handleResetPassword} className="bg-blue-600 hover:bg-blue-700">איפוס סיסמה</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

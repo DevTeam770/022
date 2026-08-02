@@ -15,7 +15,6 @@ export function LoginPage() {
   const { setProfile } = useProfileStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("customer");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,9 +24,9 @@ export function LoginPage() {
     }
 
     const fullName = email.split("@")[0];
-    login({ email, fullName, role });
+    login({ email, fullName, role: "customer" });
     setProfile({ fullName, email });
-    toast.success(`התחברת בהצלחה כ${role === "technician" ? "טכנאי" : "לקוח"}`);
+    toast.success("התחברת בהצלחה");
     navigate("/");
   };
 
@@ -62,18 +61,6 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">סוג משתמש</Label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
-              >
-                <option value="customer">לקוח</option>
-                <option value="technician">טכנאי</option>
-              </select>
             </div>
             <Button type="submit" className="w-full">
               התחבר
