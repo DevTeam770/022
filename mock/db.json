@@ -94,6 +94,56 @@
       "role": "technician",
       "createdAt": "2026-07-28T13:18:19.735Z",
       "id": "SrhiJ1ZOC7E"
+    },
+    {
+      "fullName": "יונתן המלך",
+      "personalId": "s9515537",
+      "password": "123456",
+      "role": "technician",
+      "createdAt": "2026-08-03T06:01:23.541Z",
+      "id": "QZcWo-meFj8"
+    },
+    {
+      "fullName": "מאיר בן ציון דביר",
+      "personalId": "s9292801",
+      "password": "צקןר224466",
+      "role": "technician",
+      "createdAt": "2026-08-03T06:43:40.198Z",
+      "id": "tOMlojJxJ3U"
+    },
+    {
+      "fullName": "יעקב כפר",
+      "personalId": "s8674576",
+      "password": "Yaakov123456",
+      "role": "technician",
+      "createdAt": "2026-08-03T08:01:20.663Z",
+      "id": "6Fqr1WyB3AY"
+    }
+  ],
+  "requests": [
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "יעקב כפר",
+      "phone": "5113770",
+      "description": "להוסיף את השם 'אהרן'",
+      "newName": "יעקב אהרן כפר",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-03T08:38:52.423Z",
+      "id": "FA3LrIzzQOQ"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "יעקב כפר",
+      "phone": "5112770",
+      "description": "שלום רב\nשמי יעקב אהרן כפר. אני רוצה לשנות את השם.\n\nתודה",
+      "newName": "יעקב אהרן כפר",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-03T08:42:39.376Z",
+      "id": "BeNHEPE5bI4"
     }
   ],
   "tickets": [
@@ -118,7 +168,7 @@
       "phone": "5118869",
       "mobile": "0504378887",
       "location": "מגדל דרומי, קומה 15, חדר 6",
-      "status": "open",
+      "status": "resolved",
       "priority": "medium",
       "createdByName": "יצחקוב ארלן",
       "createdAt": "2026-08-02T12:06:04.072Z",

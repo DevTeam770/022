@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, CheckCircle2, Wrench, Activity, Flag, ClipboardList, User, LogOut } from "lucide-react";
+import { Ticket, CheckCircle2, Wrench, Activity, Flag, ClipboardList, User, LogOut, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,15 +78,27 @@ export function TechnicianDashboardPage() {
   const [note, setNote] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
+  const [requests, setRequests] = useState([]);
 
   const fetchTickets = () => {
     fetch(`${API_URL}/tickets`).then((r) => r.json()).then(setTickets);
   };
 
+  const fetchRequests = () => {
+    fetch(`${API_URL}/requests`).then((r) => r.json()).then(setRequests);
+  };
+
   useEffect(() => {
     fetchTickets();
-    const interval = setInterval(fetchTickets, 5000);
-    const onFocus = () => fetchTickets();
+    fetchRequests();
+    const interval = setInterval(() => {
+      fetchTickets();
+      fetchRequests();
+    }, 5000);
+    const onFocus = () => {
+      fetchTickets();
+      fetchRequests();
+    };
     window.addEventListener("focus", onFocus);
     return () => {
       clearInterval(interval);
@@ -137,6 +149,24 @@ export function TechnicianDashboardPage() {
     }
   };
 
+  const handleRequestStatusChange = async (requestId, status) => {
+    try {
+      await fetch(`${API_URL}/requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      toast.success(`סטטוס הבקשה עודכן ל${statusLabels[status]}`);
+      fetchRequests();
+    } catch {
+      toast.error("שגיאה בעדכון הסטטוס");
+    }
+  };
+
+  const visibleRequests = requests
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   const openCount = tickets.filter((t) => t.status === "open").length;
   const inProgressCount = tickets.filter((t) => t.status === "in-progress").length;
   const resolvedCount = tickets.filter((t) => t.status === "resolved").length;
@@ -151,7 +181,7 @@ export function TechnicianDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8" dir="rtl">
-      <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto max-w-7xl space-y-5">
         {/* Header Banner */}
         <div className="relative overflow-hidden rounded-2xl bg-blue-600 p-8 md:p-12 shadow-2xl">
           <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -235,7 +265,7 @@ export function TechnicianDashboardPage() {
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="border-0 bg-white shadow-xl">
-            <CardHeader className="border-b border-slate-100 pb-6">
+            <CardHeader className="border-b border-slate-100 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
                 <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2 text-white">
                   <Activity className="h-5 w-5" />
@@ -243,7 +273,7 @@ export function TechnicianDashboardPage() {
                 התפלגות תקלות לפי מערכת
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               <div className="space-y-4">
                 {Object.entries(bySystem).length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400">
@@ -273,7 +303,7 @@ export function TechnicianDashboardPage() {
           </Card>
 
           <Card className="border-0 bg-white shadow-xl">
-            <CardHeader className="border-b border-slate-100 pb-6">
+            <CardHeader className="border-b border-slate-100 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
                 <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-2 text-white">
                   <Flag className="h-5 w-5" />
@@ -281,7 +311,7 @@ export function TechnicianDashboardPage() {
                 התפלגות לפי עדיפות
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4">
               <div className="space-y-4">
                 {Object.entries(byPriority).length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400">
@@ -311,10 +341,77 @@ export function TechnicianDashboardPage() {
           </Card>
         </div>
 
+        {/* Requests */}
+        <Card className="border-0 bg-white shadow-xl">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-4">
+            <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
+              <div className="rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 p-2 text-white">
+                <FileText className="h-5 w-5" />
+              </div>
+              רשימת בקשות
+            </CardTitle>
+            <Badge className="bg-slate-800 text-white border-0 shadow-md">
+              {requests.filter((r) => r.status === "open").length} בקשות פתוחות
+            </Badge>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">סוג בקשה</TableHead>
+                  <TableHead className="text-right">שם</TableHead>
+                  <TableHead className="text-right">שם חדש</TableHead>
+                  <TableHead className="text-right">טלפון</TableHead>
+                  <TableHead className="text-right">תיאור</TableHead>
+                  <TableHead className="text-right">תאריך</TableHead>
+                  <TableHead className="text-right">סטטוס</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleRequests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-slate-500">
+                      אין בקשות להצגה
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  visibleRequests.map((request) => (
+                    <TableRow key={request.id}>
+                      <TableCell className="font-medium">{request.typeLabel || request.type || "—"}</TableCell>
+                      <TableCell>{request.createdByName || request.name || "לא ידוע"}</TableCell>
+                      <TableCell className="font-medium text-blue-700">{request.newName || "—"}</TableCell>
+                      <TableCell>{request.phone || "—"}</TableCell>
+                      <TableCell className="max-w-xs truncate">{request.description || "—"}</TableCell>
+                      <TableCell>{new Date(request.createdAt).toLocaleDateString("he-IL")}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={request.status}
+                          onValueChange={(status) => handleRequestStatusChange(request.id, status)}
+                        >
+                          <SelectTrigger className="h-8 w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(statusLabels).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
         {/* Tickets + Detail Panel */}
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="border-0 bg-white shadow-xl lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-6">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
                 <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 p-2 text-white">
                   <ClipboardList className="h-5 w-5" />
@@ -375,7 +472,7 @@ export function TechnicianDashboardPage() {
           </Card>
 
           <Card className="border-0 bg-white shadow-xl">
-            <CardHeader className="border-b border-slate-100 pb-6">
+            <CardHeader className="border-b border-slate-100 pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl font-bold text-slate-800">
                 <div className="rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 p-2 text-white">
                   <User className="h-5 w-5" />
@@ -383,7 +480,7 @@ export function TechnicianDashboardPage() {
                 פרטי תקלה
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 pt-6">
+            <CardContent className="space-y-4 pt-4">
               {selectedTicket ? (
                 <>
                   <div className="space-y-1 rounded-xl bg-slate-50 p-4">

@@ -11,8 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
+
+const API_URL = "http://localhost:3001";
 
 export function HomePage() {
+  const { user } = useAuthStore();
   const [openTile, setOpenTile] = useState(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,15 +33,38 @@ export function HomePage() {
     setShowValidation(false);
   };
 
-  const handleNameRequest = (event) => {
+  const handleNameRequest = async (event) => {
     event.preventDefault();
     if (!name || !phone || !description || !newName) {
       setShowValidation(true);
       return;
     }
-    toast.success("הבקשה נשלחה בהצלחה");
-    handleClose();
-  }; 
+
+    const request = {
+      type: "name-change",
+      typeLabel: "שינוי/הוספת שם",
+      name,
+      phone,
+      description,
+      newName,
+      status: "open",
+      createdBy: user?.email,
+      createdByName: user?.fullName,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await fetch(`${API_URL}/requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+      toast.success("הבקשה נשלחה בהצלחה");
+      handleClose();
+    } catch {
+      toast.error("שגיאה בשליחת הבקשה");
+    }
+  };
 
   const tiles = [
     { id: 1, title: "שינוי/הוספת שם" },
