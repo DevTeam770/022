@@ -144,6 +144,30 @@
       "createdByName": "יעקב כפר",
       "createdAt": "2026-08-03T08:42:39.376Z",
       "id": "BeNHEPE5bI4"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "אלברט פינקלשטיין",
+      "phone": "5878790",
+      "description": "לשנות מפינקלשטיין ל'שוורצמן'",
+      "newName": "אלברט שוורצמן",
+      "status": "open",
+      "createdAt": "2026-08-04T08:34:19.477Z",
+      "id": "I8htSFW75KE"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5878790",
+      "description": "חראלראלצאעחגח",
+      "newName": "ירי'יער'טע4ק'טעק'",
+      "status": "closed",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-04T13:07:00.401Z",
+      "id": "CcbfBoYUt6w",
+      "rejectionReason": "אחאחאחא"
     }
   ],
   "tickets": [

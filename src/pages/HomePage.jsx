@@ -140,8 +140,8 @@ export function HomePage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="request-name" className="font-medium text-slate-700">שם <span className="text-red-500">*</span></Label>
-                  <Input id="request-name" aria-invalid={showValidation && !name} value={name} onChange={(event) => setName(event.target.value)} placeholder="הזן שם מלא" className={`h-11 caret-blue-700 ${showValidation && !name ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
+                  <Label htmlFor="request-name" className="font-medium text-slate-700">מס' אישי <span className="text-red-500">*</span></Label>
+                  <Input id="request-name" aria-invalid={showValidation && !name} value={name} onChange={(event) => setName(event.target.value)} placeholder="הזן מספר אישי" className={`h-11 caret-blue-700 ${showValidation && !name ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
                   {showValidation && !name && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
                 </div>
                 <div className="space-y-2">

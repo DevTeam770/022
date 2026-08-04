@@ -79,6 +79,9 @@ export function TechnicianDashboardPage() {
   const [statusFilter, setStatusFilter] = useState(null);
   const [isLogoutConfirmationOpen, setIsLogoutConfirmationOpen] = useState(false);
   const [requests, setRequests] = useState([]);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const fetchTickets = () => {
     fetch(`${API_URL}/tickets`).then((r) => r.json()).then(setTickets);
@@ -107,6 +110,7 @@ export function TechnicianDashboardPage() {
   }, []);
 
   const selectedTicket = tickets.find((t) => t.id === selectedTicketId);
+  const selectedRequest = requests.find((r) => r.id === selectedRequestId);
 
   const handleLogout = () => {
     logout();
@@ -149,17 +153,41 @@ export function TechnicianDashboardPage() {
     }
   };
 
-  const handleRequestStatusChange = async (requestId, status) => {
+  const closeRequestDialog = () => {
+    setSelectedRequestId(null);
+    setIsRejectDialogOpen(false);
+    setRejectReason("");
+  };
+
+  const handleApproveRequest = async () => {
+    if (!selectedRequest) return;
     try {
-      await fetch(`${API_URL}/requests/${requestId}`, {
+      await fetch(`${API_URL}/requests/${selectedRequest.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status: "resolved" }),
       });
-      toast.success(`סטטוס הבקשה עודכן ל${statusLabels[status]}`);
+      toast.success("הבקשה אושרה");
       fetchRequests();
+      closeRequestDialog();
     } catch {
-      toast.error("שגיאה בעדכון הסטטוס");
+      toast.error("שגיאה בעדכון הבקשה");
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    if (!selectedRequest || !rejectReason) return;
+    try {
+      await fetch(`${API_URL}/requests/${selectedRequest.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed", rejectionReason: rejectReason }),
+      });
+      toast.success("הבקשה נדחתה");
+      fetchRequests();
+      closeRequestDialog();
+    } catch {
+      toast.error("שגיאה בעדכון הבקשה");
     }
   };
 
@@ -359,10 +387,9 @@ export function TechnicianDashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">סוג בקשה</TableHead>
-                  <TableHead className="text-right">שם</TableHead>
+                  <TableHead className="text-right">מס' אישי</TableHead>
                   <TableHead className="text-right">שם חדש</TableHead>
                   <TableHead className="text-right">טלפון</TableHead>
-                  <TableHead className="text-right">תיאור</TableHead>
                   <TableHead className="text-right">תאריך</TableHead>
                   <TableHead className="text-right">סטטוס</TableHead>
                 </TableRow>
@@ -370,35 +397,27 @@ export function TechnicianDashboardPage() {
               <TableBody>
                 {visibleRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-slate-500">
+                    <TableCell colSpan={6} className="text-center text-slate-500">
                       אין בקשות להצגה
                     </TableCell>
                   </TableRow>
                 ) : (
                   visibleRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">{request.typeLabel || request.type || "—"}</TableCell>
+                      <TableCell
+                        className="font-medium cursor-pointer text-blue-700 hover:underline"
+                        onClick={() => setSelectedRequestId(request.id)}
+                      >
+                        {request.typeLabel || request.type || "—"}
+                      </TableCell>
                       <TableCell>{request.createdByName || request.name || "לא ידוע"}</TableCell>
                       <TableCell className="font-medium text-blue-700">{request.newName || "—"}</TableCell>
                       <TableCell>{request.phone || "—"}</TableCell>
-                      <TableCell className="max-w-xs truncate">{request.description || "—"}</TableCell>
                       <TableCell>{new Date(request.createdAt).toLocaleDateString("he-IL")}</TableCell>
                       <TableCell>
-                        <Select
-                          value={request.status}
-                          onValueChange={(status) => handleRequestStatusChange(request.id, status)}
-                        >
-                          <SelectTrigger className="h-8 w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(statusLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Badge variant={statusVariant[request.status] || "outline"}>
+                          {statusLabels[request.status] || request.status}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))
@@ -556,6 +575,80 @@ export function TechnicianDashboardPage() {
           <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => setIsLogoutConfirmationOpen(false)}>ביטול</Button>
             <Button type="button" onClick={handleLogout} className="bg-rose-600 hover:bg-rose-700">התנתק</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedRequestId && !isRejectDialogOpen} onOpenChange={(open) => !open && closeRequestDialog()}>
+        <DialogContent className="max-w-lg [&>button]:left-4 [&>button]:right-auto" dir="rtl">
+          <DialogHeader className="text-right sm:text-right">
+            <DialogTitle className="text-right text-xl font-bold text-slate-800">
+              {selectedRequest?.typeLabel || "פרטי בקשה"}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4 text-right">
+              <div className="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4">
+                <div>
+                  <p className="text-xs text-slate-500">מס' אישי</p>
+                  <p className="font-medium text-slate-800">{selectedRequest.createdByName || selectedRequest.name || "לא ידוע"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">שם חדש</p>
+                  <p className="font-medium text-blue-700">{selectedRequest.newName || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">טלפון</p>
+                  <p className="font-medium text-slate-800">{selectedRequest.phone || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">תאריך</p>
+                  <p className="font-medium text-slate-800">{new Date(selectedRequest.createdAt).toLocaleDateString("he-IL")}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-slate-500">תיאור</p>
+                  <p className="font-medium text-slate-800">{selectedRequest.description || "—"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="mb-1 text-xs text-slate-500">סטטוס נוכחי</p>
+                  <Badge variant={statusVariant[selectedRequest.status] || "outline"}>
+                    {statusLabels[selectedRequest.status] || selectedRequest.status}
+                  </Badge>
+                </div>
+                {selectedRequest.rejectionReason && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-slate-500">סיבת דחייה</p>
+                    <p className="font-medium text-rose-600">{selectedRequest.rejectionReason}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button type="button" variant="destructive" onClick={() => setIsRejectDialogOpen(true)}>לא אשר</Button>
+                <Button type="button" onClick={handleApproveRequest} className="bg-emerald-600 hover:bg-emerald-700">אשר</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isRejectDialogOpen} onOpenChange={(open) => !open && setIsRejectDialogOpen(false)}>
+        <DialogContent className="max-w-md [&>button]:left-4 [&>button]:right-auto" dir="rtl">
+          <DialogHeader className="text-right sm:text-right">
+            <DialogTitle className="text-right text-xl font-bold text-slate-800">סיבת דחייה</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-right">
+            <p className="text-sm font-medium text-slate-700">סיבה</p>
+            <Textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="נא למלא..."
+              rows={3}
+            />
+          </div>
+          <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => setIsRejectDialogOpen(false)}>ביטול</Button>
+            <Button type="button" onClick={handleRejectRequest} disabled={!rejectReason} className="bg-rose-600 hover:bg-rose-700">שליחה</Button>
           </div>
         </DialogContent>
       </Dialog>
