@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Wrench } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useProfileStore } from "@/store/useProfileStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +17,26 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("נא למלא את כל השדות");
       return;
     }
 
-    const fullName = email.split("@")[0];
-    login({ email, fullName, role: "customer" });
-    setProfile({ fullName, email });
-    toast.success("התחברת בהצלחה");
-    navigate("/");
+    try {
+      const { token, user } = await apiFetch("/auth/login/customer", {
+        method: "POST",
+        body: { email, password },
+        auth: false,
+      });
+      login(user, token);
+      setProfile({ fullName: user.fullName, email: user.email });
+      toast.success("התחברת בהצלחה");
+      navigate("/");
+    } catch {
+      toast.error("לא ניתן להתחבר לשרת. נסה שוב מאוחר יותר.");
+    }
   };
 
   return (

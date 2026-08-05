@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Bell, ClipboardPlus, MapPin, Send, UserRound } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,11 +84,7 @@ export function Header() {
       createdAt: new Date().toISOString(),
     };
     try {
-      await fetch(`${API_URL}/tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ticket),
-      });
+      await apiFetch("/tickets", { method: "POST", body: ticket });
       toast.success("התקלה נשמרה במסד הנתונים");
       handleClose();
     } catch {

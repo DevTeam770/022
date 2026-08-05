@@ -2,13 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Wrench } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-
-const API_URL = "http://localhost:3001";
 
 export function TechnicianLoginPage() {
   const navigate = useNavigate();
@@ -26,23 +25,16 @@ export function TechnicianLoginPage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/users?role=technician`);
-      const technicians = await response.json();
-      console.log("[DEBUG] entered:", JSON.stringify(personalId), JSON.stringify(password));
-      console.log("[DEBUG] technicians from server:", technicians);
-      const match = technicians.find((u) => u.personalId === personalId && u.password === password);
-
-      if (match) {
-        login({ personalId, fullName: match.fullName, role: "technician" });
-        toast.success("התחברת בהצלחה כטכנאי");
-        navigate("/technician/dashboard");
-      } else {
-        const message = "מספר אישי או הסיסמה שגויים. נסה שוב.";
-        setLoginError(message);
-        toast.error(message);
-      }
+      const { token, user } = await apiFetch("/auth/login/technician", {
+        method: "POST",
+        body: { personalId, password },
+        auth: false,
+      });
+      login(user, token);
+      toast.success("התחברת בהצלחה כטכנאי");
+      navigate("/technician/dashboard");
     } catch {
-      const message = "לא ניתן להתחבר לשרת. נסה שוב מאוחר יותר.";
+      const message = "מספר אישי או הסיסמה שגויים. נסה שוב.";
       setLoginError(message);
       toast.error(message);
     }

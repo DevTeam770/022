@@ -67,14 +67,14 @@
     {
       "id": "1",
       "username": "admin",
-      "password": "admin123"
+      "password": "$2a$10$XpD5nZV.rntrnveTkrs1jOu3BY99v8mld6Voceg8eYP674NwTHRhC"
     }
   ],
   "users": [
     {
       "fullName": "יצחקוב ארלן",
       "personalId": "s0987657",
-      "password": "abcde12345",
+      "password": "$2a$10$1GMTwqwxLXW.CTIMPqDLUetzWBRk7v4LUD9m0xkn4PWPSUEAzO7Iy",
       "role": "technician",
       "createdAt": "2026-07-28T13:13:24.880Z",
       "id": "riyVlv7-H3Q"
@@ -82,7 +82,7 @@
     {
       "fullName": "ביטון עדן",
       "personalId": "s7585898",
-      "password": "456789",
+      "password": "$2a$10$q9FbLYRI1fkhR10m6T7GduwVRBD9sWxBfgXuUvvWqUe5tCvhdLLkS",
       "role": "technician",
       "createdAt": "2026-07-28T13:15:14.799Z",
       "id": "tpPFuFKKKYk"
@@ -90,7 +90,7 @@
     {
       "fullName": "רזובסקי אמיר",
       "personalId": "m5859856",
-      "password": "123098",
+      "password": "$2a$10$FxMUI8qfxkrQYNF21YwhoeiJi9X4HAwKwz1ZtX2kEGD4QYvpFOBKO",
       "role": "technician",
       "createdAt": "2026-07-28T13:18:19.735Z",
       "id": "SrhiJ1ZOC7E"
@@ -98,7 +98,7 @@
     {
       "fullName": "יונתן המלך",
       "personalId": "s9515537",
-      "password": "123456",
+      "password": "$2a$10$6SllkQm0WQeYW/uWREUuUuFw8DvJY6f60KL.mEBRakXUBmkCF7zmy",
       "role": "technician",
       "createdAt": "2026-08-03T06:01:23.541Z",
       "id": "QZcWo-meFj8"
@@ -106,7 +106,7 @@
     {
       "fullName": "מאיר בן ציון דביר",
       "personalId": "s9292801",
-      "password": "צקןר224466",
+      "password": "$2a$10$FrNUNyEi8eZHmNpV2oxAxe0KBZHdFGCU4EHw1EwO2H3MqFhqvuv6.",
       "role": "technician",
       "createdAt": "2026-08-03T06:43:40.198Z",
       "id": "tOMlojJxJ3U"
@@ -114,7 +114,7 @@
     {
       "fullName": "יעקב כפר",
       "personalId": "s8674576",
-      "password": "Yaakov123456",
+      "password": "$2a$10$nr3iaka4zOLaN/LETGNu5uHxDLrAyjsIuKeD.k0q6jOLVHDxpaQAW",
       "role": "technician",
       "createdAt": "2026-08-03T08:01:20.663Z",
       "id": "6Fqr1WyB3AY"
@@ -143,7 +143,8 @@
       "status": "resolved",
       "createdByName": "יעקב כפר",
       "createdAt": "2026-08-03T08:42:39.376Z",
-      "id": "BeNHEPE5bI4"
+      "id": "BeNHEPE5bI4",
+      "rejectionReason": "tjtj"
     },
     {
       "type": "name-change",
@@ -163,11 +164,24 @@
       "phone": "5878790",
       "description": "חראלראלצאעחגח",
       "newName": "ירי'יער'טע4ק'טעק'",
-      "status": "closed",
+      "status": "resolved",
       "createdByName": "יעקב כפר",
       "createdAt": "2026-08-04T13:07:00.401Z",
       "id": "CcbfBoYUt6w",
-      "rejectionReason": "אחאחאחא"
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5113770",
+      "description": "hrhjrfshbbhshbshbsedbh",
+      "newName": "dndndfnfndrns",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-05T09:46:12.556Z",
+      "id": "ec0fe37b-68f4-42eb-8154-fb6e837b61ed",
+      "rejectionReason": null
     }
   ],
   "tickets": [

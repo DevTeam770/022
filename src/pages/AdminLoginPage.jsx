@@ -2,13 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-
-const API_URL = "http://localhost:3001";
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
@@ -26,20 +25,16 @@ export function AdminLoginPage() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/admins?username=${username}&password=${password}`);
-      const admins = await response.json();
-
-      if (admins.length > 0) {
-        login({ username, role: "admin" });
-        toast.success("התחברת בהצלחה כמנהל");
-        navigate("/admin/dashboard");
-      } else {
-        const message = "שם המשתמש או הסיסמה שגויים. נסה שוב.";
-        setLoginError(message);
-        toast.error(message);
-      }
+      const { token, user } = await apiFetch("/auth/login/admin", {
+        method: "POST",
+        body: { username, password },
+        auth: false,
+      });
+      login(user, token);
+      toast.success("התחברת בהצלחה כמנהל");
+      navigate("/admin/dashboard");
     } catch {
-      const message = "לא ניתן להתחבר לשרת. נסה שוב מאוחר יותר.";
+      const message = "שם המשתמש או הסיסמה שגויים. נסה שוב.";
       setLoginError(message);
       toast.error(message);
     }

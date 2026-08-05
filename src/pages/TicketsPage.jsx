@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusCircle } from "lucide-react";
-
-const API_URL = "http://localhost:3001";
 
 const statusLabels = {
   open: "פתוחה",
@@ -50,9 +49,7 @@ export function TicketsPage() {
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/tickets`)
-      .then((r) => r.json())
-      .then(setTickets);
+    apiFetch("/tickets").then(setTickets);
   }, []);
 
   const visibleTickets =

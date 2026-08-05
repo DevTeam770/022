@@ -18,8 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = "http://localhost:3001";
+import { apiFetch } from "@/lib/api";
 
 const userRoleLabels = {
   customer: "לקוח",
@@ -69,8 +68,8 @@ export function AdminDashboardPage() {
   const [resetPasswordError, setResetPasswordError] = useState("");
 
   const fetchData = () => {
-    fetch(`${API_URL}/tickets`).then((r) => r.json()).then(setTickets);
-    fetch(`${API_URL}/users`).then((r) => r.json()).then(setUsers);
+    apiFetch("/tickets").then(setTickets).catch(() => toast.error("שגיאה בטעינת התקלות"));
+    apiFetch("/users").then(setUsers).catch(() => toast.error("שגיאה בטעינת המשתמשים"));
   };
 
   useEffect(() => {
@@ -113,16 +112,15 @@ export function AdminDashboardPage() {
     }
 
     try {
-      await fetch(`${API_URL}/users`, {
+      await apiFetch("/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           fullName: newUserName,
           personalId: newUserPersonalId,
           password: newUserPassword,
           role: newUserRole,
           createdAt: new Date().toISOString(),
-        }),
+        },
       });
       toast.success("המשתמש נוצר בהצלחה");
       closeCreateUser();
@@ -154,10 +152,9 @@ export function AdminDashboardPage() {
     }
 
     try {
-      await fetch(`${API_URL}/users/${resetPasswordUser.id}`, {
+      await apiFetch(`/users/${resetPasswordUser.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPassword }),
+        body: { password: newPassword },
       });
       toast.success("הסיסמה אופסה בהצלחה");
       closeResetPassword();

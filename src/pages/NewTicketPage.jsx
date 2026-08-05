@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, ArrowRight, X, LayoutDashboard, BarChart3, FileText, Settings, Shield, LogOut, Bell, ChevronLeft, HelpCircle, Save, User, Building2, Smartphone } from "lucide-react";
-
-const API_URL = "http://localhost:3001";
 
 const PRIORITIES = [
   { value: "low", label: "נמוכה" },
@@ -40,8 +39,8 @@ export function NewTicketPage() {
   const [priority, setPriority] = useState("medium");
 
   useEffect(() => {
-    fetch(`${API_URL}/systems`).then((r) => r.json()).then(setSystems);
-    fetch(`${API_URL}/faultTypes`).then((r) => r.json()).then(setFaultTypes);
+    apiFetch("/systems", { auth: false }).then(setSystems);
+    apiFetch("/faultTypes", { auth: false }).then(setFaultTypes);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -67,11 +66,7 @@ export function NewTicketPage() {
     };
 
     try {
-      await fetch(`${API_URL}/tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ticket),
-      });
+      await apiFetch("/tickets", { method: "POST", body: ticket });
       toast.success("התקלה נפתחה בהצלחה ונשמרה במסד הנתונים");
       navigate("/tickets");
     } catch {

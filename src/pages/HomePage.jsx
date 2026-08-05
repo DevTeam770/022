@@ -12,8 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
-
-const API_URL = "http://localhost:3001";
+import { apiFetch } from "@/lib/api";
 
 export function HomePage() {
   const { user } = useAuthStore();
@@ -54,11 +53,7 @@ export function HomePage() {
     };
 
     try {
-      await fetch(`${API_URL}/requests`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
+      await apiFetch("/requests", { method: "POST", body: request });
       toast.success("הבקשה נשלחה בהצלחה");
       handleClose();
     } catch {

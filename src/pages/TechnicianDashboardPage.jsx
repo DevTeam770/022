@@ -24,8 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
-
-const API_URL = "http://localhost:3001";
+import { apiFetch } from "@/lib/api";
 
 const statusLabels = {
   open: "פתוחה",
@@ -82,13 +81,15 @@ export function TechnicianDashboardPage() {
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [cucmResult, setCucmResult] = useState(null);
+  const [cucmLoading, setCucmLoading] = useState(false);
 
   const fetchTickets = () => {
-    fetch(`${API_URL}/tickets`).then((r) => r.json()).then(setTickets);
+    apiFetch("/tickets").then(setTickets).catch(() => toast.error("שגיאה בטעינת התקלות"));
   };
 
   const fetchRequests = () => {
-    fetch(`${API_URL}/requests`).then((r) => r.json()).then(setRequests);
+    apiFetch("/requests").then(setRequests).catch(() => toast.error("שגיאה בטעינת הבקשות"));
   };
 
   useEffect(() => {
@@ -124,10 +125,9 @@ export function TechnicianDashboardPage() {
   const handleStatusChange = async (status) => {
     if (!selectedTicket) return;
     try {
-      await fetch(`${API_URL}/tickets/${selectedTicket.id}`, {
+      await apiFetch(`/tickets/${selectedTicket.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: { status },
       });
       toast.success(`סטטוס התקלה עודכן ל${statusLabels[status]}`);
       fetchTickets();
@@ -140,10 +140,9 @@ export function TechnicianDashboardPage() {
     if (!selectedTicket || !note) return;
     const notes = [...(selectedTicket.notes || []), { text: note, createdAt: new Date().toISOString() }];
     try {
-      await fetch(`${API_URL}/tickets/${selectedTicket.id}`, {
+      await apiFetch(`/tickets/${selectedTicket.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
+        body: { notes },
       });
       setNote("");
       toast.success("ההערה נשמרה");
@@ -157,15 +156,30 @@ export function TechnicianDashboardPage() {
     setSelectedRequestId(null);
     setIsRejectDialogOpen(false);
     setRejectReason("");
+    setCucmResult(null);
+  };
+
+  const handleCheckCucm = async () => {
+    if (!selectedRequest?.phone) return;
+    setCucmLoading(true);
+    setCucmResult(null);
+    try {
+      const data = await apiFetch(`/cucm/lines?pattern=${encodeURIComponent(selectedRequest.phone)}`);
+      setCucmResult(data);
+      toast.success(Array.isArray(data) && data.length > 0 ? "נמצא קו ב-CUCM" : "לא נמצא קו תואם ב-CUCM");
+    } catch (err) {
+      toast.error(err.message || "שגיאה במשיכת נתונים מ-Census");
+    } finally {
+      setCucmLoading(false);
+    }
   };
 
   const handleApproveRequest = async () => {
     if (!selectedRequest) return;
     try {
-      await fetch(`${API_URL}/requests/${selectedRequest.id}`, {
+      await apiFetch(`/requests/${selectedRequest.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "resolved" }),
+        body: { status: "resolved", rejectionReason: null },
       });
       toast.success("הבקשה אושרה");
       fetchRequests();
@@ -178,10 +192,9 @@ export function TechnicianDashboardPage() {
   const handleRejectRequest = async () => {
     if (!selectedRequest || !rejectReason) return;
     try {
-      await fetch(`${API_URL}/requests/${selectedRequest.id}`, {
+      await apiFetch(`/requests/${selectedRequest.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "closed", rejectionReason: rejectReason }),
+        body: { status: "closed", rejectionReason: rejectReason },
       });
       toast.success("הבקשה נדחתה");
       fetchRequests();
@@ -410,7 +423,7 @@ export function TechnicianDashboardPage() {
                       >
                         {request.typeLabel || request.type || "—"}
                       </TableCell>
-                      <TableCell>{request.createdByName || request.name || "לא ידוע"}</TableCell>
+                      <TableCell>{request.name || "לא ידוע"}</TableCell>
                       <TableCell className="font-medium text-blue-700">{request.newName || "—"}</TableCell>
                       <TableCell>{request.phone || "—"}</TableCell>
                       <TableCell>{new Date(request.createdAt).toLocaleDateString("he-IL")}</TableCell>
@@ -591,7 +604,7 @@ export function TechnicianDashboardPage() {
               <div className="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4">
                 <div>
                   <p className="text-xs text-slate-500">מס' אישי</p>
-                  <p className="font-medium text-slate-800">{selectedRequest.createdByName || selectedRequest.name || "לא ידוע"}</p>
+                  <p className="font-medium text-slate-800">{selectedRequest.name || "לא ידוע"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">שם חדש</p>
@@ -615,13 +628,39 @@ export function TechnicianDashboardPage() {
                     {statusLabels[selectedRequest.status] || selectedRequest.status}
                   </Badge>
                 </div>
-                {selectedRequest.rejectionReason && (
+                {selectedRequest.status === "closed" && selectedRequest.rejectionReason && (
                   <div className="col-span-2">
                     <p className="text-xs text-slate-500">סיבת דחייה</p>
                     <p className="font-medium text-rose-600">{selectedRequest.rejectionReason}</p>
                   </div>
                 )}
               </div>
+
+              {selectedRequest.type === "name-change" && (
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCheckCucm}
+                    disabled={!selectedRequest.phone || cucmLoading}
+                  >
+                    {cucmLoading ? "בודק מול CUCM..." : "בדוק קו ב-CUCM (Census)"}
+                  </Button>
+                  {cucmResult && (
+                    <div className="rounded-xl bg-slate-50 p-4 text-sm">
+                      <p className="mb-2 font-semibold text-slate-700">תוצאה מ-Census</p>
+                      {Array.isArray(cucmResult) && cucmResult.length > 0 ? (
+                        <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs text-slate-600" dir="ltr">
+                          {JSON.stringify(cucmResult, null, 2)}
+                        </pre>
+                      ) : (
+                        <p className="text-slate-500">לא נמצא קו תואם למספר {selectedRequest.phone}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button type="button" variant="destructive" onClick={() => setIsRejectDialogOpen(true)}>לא אשר</Button>
