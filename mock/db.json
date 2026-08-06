@@ -1,0 +1,243 @@
+{
+  "systems": [
+    {
+      "id": "1",
+      "name": "שביל"
+    },
+    {
+      "id": "2",
+      "name": "נתיב"
+    },
+    {
+      "id": "3",
+      "name": "אחר"
+    }
+  ],
+  "faultTypes": [
+    {
+      "id": "1",
+      "name": "תקלת חשמל"
+    },
+    {
+      "id": "2",
+      "name": "תקלה מכנית"
+    },
+    {
+      "id": "3",
+      "name": "תקלת תוכנה"
+    },
+    {
+      "id": "4",
+      "name": "תקשורת"
+    }
+  ],
+  "bases": [
+    {
+      "id": "1",
+      "name": "בסיס צפון"
+    },
+    {
+      "id": "2",
+      "name": "בסיס דרום"
+    },
+    {
+      "id": "3",
+      "name": "בסיס מרכז"
+    },
+    {
+      "id": "4",
+      "name": "בסיס מזרח"
+    }
+  ],
+  "calls": [
+    {
+      "id": "1",
+      "name": "קריאה 101"
+    },
+    {
+      "id": "2",
+      "name": "קריאה 102"
+    },
+    {
+      "id": "3",
+      "name": "קריאה 103"
+    }
+  ],
+  "admins": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "$2a$10$XpD5nZV.rntrnveTkrs1jOu3BY99v8mld6Voceg8eYP674NwTHRhC"
+    }
+  ],
+  "users": [
+    {
+      "fullName": "יצחקוב ארלן",
+      "personalId": "s0987657",
+      "password": "$2a$10$1GMTwqwxLXW.CTIMPqDLUetzWBRk7v4LUD9m0xkn4PWPSUEAzO7Iy",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:13:24.880Z",
+      "id": "riyVlv7-H3Q"
+    },
+    {
+      "fullName": "ביטון עדן",
+      "personalId": "s7585898",
+      "password": "$2a$10$q9FbLYRI1fkhR10m6T7GduwVRBD9sWxBfgXuUvvWqUe5tCvhdLLkS",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:15:14.799Z",
+      "id": "tpPFuFKKKYk"
+    },
+    {
+      "fullName": "רזובסקי אמיר",
+      "personalId": "m5859856",
+      "password": "$2a$10$FxMUI8qfxkrQYNF21YwhoeiJi9X4HAwKwz1ZtX2kEGD4QYvpFOBKO",
+      "role": "technician",
+      "createdAt": "2026-07-28T13:18:19.735Z",
+      "id": "SrhiJ1ZOC7E"
+    },
+    {
+      "fullName": "יונתן המלך",
+      "personalId": "s9515537",
+      "password": "$2a$10$6SllkQm0WQeYW/uWREUuUuFw8DvJY6f60KL.mEBRakXUBmkCF7zmy",
+      "role": "technician",
+      "createdAt": "2026-08-03T06:01:23.541Z",
+      "id": "QZcWo-meFj8"
+    },
+    {
+      "fullName": "מאיר בן ציון דביר",
+      "personalId": "s9292801",
+      "password": "$2a$10$FrNUNyEi8eZHmNpV2oxAxe0KBZHdFGCU4EHw1EwO2H3MqFhqvuv6.",
+      "role": "technician",
+      "createdAt": "2026-08-03T06:43:40.198Z",
+      "id": "tOMlojJxJ3U"
+    },
+    {
+      "fullName": "יעקב כפר",
+      "personalId": "s8674576",
+      "password": "$2a$10$nr3iaka4zOLaN/LETGNu5uHxDLrAyjsIuKeD.k0q6jOLVHDxpaQAW",
+      "role": "technician",
+      "createdAt": "2026-08-03T08:01:20.663Z",
+      "id": "6Fqr1WyB3AY"
+    }
+  ],
+  "requests": [
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "יעקב כפר",
+      "phone": "5113770",
+      "description": "להוסיף את השם 'אהרן'",
+      "newName": "יעקב אהרן כפר",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-03T08:38:52.423Z",
+      "id": "FA3LrIzzQOQ"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "יעקב כפר",
+      "phone": "5112770",
+      "description": "שלום רב\nשמי יעקב אהרן כפר. אני רוצה לשנות את השם.\n\nתודה",
+      "newName": "יעקב אהרן כפר",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-03T08:42:39.376Z",
+      "id": "BeNHEPE5bI4",
+      "rejectionReason": "tjtj"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "אלברט פינקלשטיין",
+      "phone": "5878790",
+      "description": "לשנות מפינקלשטיין ל'שוורצמן'",
+      "newName": "אלברט שוורצמן",
+      "status": "open",
+      "createdAt": "2026-08-04T08:34:19.477Z",
+      "id": "I8htSFW75KE"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5878790",
+      "description": "חראלראלצאעחגח",
+      "newName": "ירי'יער'טע4ק'טעק'",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-04T13:07:00.401Z",
+      "id": "CcbfBoYUt6w",
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5113770",
+      "description": "hrhjrfshbbhshbshbsedbh",
+      "newName": "dndndfnfndrns",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-05T09:46:12.556Z",
+      "id": "ec0fe37b-68f4-42eb-8154-fb6e837b61ed",
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5001000",
+      "description": "לשנות שם מ'TEST' ל-'qwerty'",
+      "newName": "qwerty",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-06T12:00:17.799Z",
+      "id": "b20d0f46-1e64-4c34-83a5-3a7739627c48",
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5001000",
+      "description": "לשנות מ-qwerty ל-Yessssss",
+      "newName": "Yessssss",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-06T12:12:34.133Z",
+      "id": "ec7836f3-46d7-4e39-bbb3-3e150286a809",
+      "rejectionReason": null
+    }
+  ],
+  "tickets": [
+    {
+      "systemName": "שביל",
+      "faultType": "תקלת חשמל",
+      "description": "אני מוכרח לומר לארלן שהוא פשוט אלוף! יאללה רק תניח תפילין!",
+      "personalId": "78658648",
+      "phone": "4748468",
+      "mobile": "4567868",
+      "location": "מגדל צפוני, קומה 67, חדר 4",
+      "status": "resolved",
+      "priority": "medium",
+      "createdAt": "2026-07-27T09:34:12.039Z",
+      "id": "XWzVcfy3KgY"
+    },
+    {
+      "systemName": "שביל",
+      "faultType": "תקלת חשמל",
+      "description": "אין על בית\"ר, אבל עדן שלנו בטעות אוהד מכב\"י.",
+      "personalId": "s86743456",
+      "phone": "5118869",
+      "mobile": "0504378887",
+      "location": "מגדל דרומי, קומה 15, חדר 6",
+      "status": "resolved",
+      "priority": "medium",
+      "createdByName": "יצחקוב ארלן",
+      "createdAt": "2026-08-02T12:06:04.072Z",
+      "id": "SwJQrcPzgdg"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
