@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, FileText, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, FileText, Send, PhoneCall } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,14 @@ export function HomePage() {
   const [newName, setNewName] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
+  const [sdPersonalId, setSdPersonalId] = useState("");
+  const [sdPhone, setSdPhone] = useState("");
+  const [sdDescription, setSdDescription] = useState("");
+  const [sdShowValidation, setSdShowValidation] = useState(false);
+  const [sdSpeedDials, setSdSpeedDials] = useState(null);
+  const [sdChecking, setSdChecking] = useState(false);
+  const [sdCheckError, setSdCheckError] = useState("");
+
   const handleClose = () => {
     setOpenTile(null);
     setName("");
@@ -30,7 +38,38 @@ export function HomePage() {
     setDescription("");
     setNewName("");
     setShowValidation(false);
+    setSdPersonalId("");
+    setSdPhone("");
+    setSdDescription("");
+    setSdShowValidation(false);
+    setSdSpeedDials(null);
+    setSdChecking(false);
+    setSdCheckError("");
   };
+
+  useEffect(() => {
+    if (openTile?.id !== 2) return;
+    if (sdPhone.trim().length < 4) {
+      setSdSpeedDials(null);
+      setSdCheckError("");
+      setSdChecking(false);
+      return;
+    }
+    setSdChecking(true);
+    setSdCheckError("");
+    const timeout = setTimeout(async () => {
+      try {
+        const data = await apiFetch(`/cucm/speeddials?pattern=${encodeURIComponent(sdPhone.trim())}`);
+        setSdSpeedDials(data);
+      } catch (err) {
+        setSdSpeedDials(null);
+        setSdCheckError(err.message || "שגיאה בבדיקת הקיצורים הקיימים");
+      } finally {
+        setSdChecking(false);
+      }
+    }, 600);
+    return () => clearTimeout(timeout);
+  }, [sdPhone, openTile]);
 
   const handleNameRequest = async (event) => {
     event.preventDefault();
@@ -46,6 +85,39 @@ export function HomePage() {
       phone,
       description,
       newName,
+      status: "open",
+      createdBy: user?.email,
+      createdByName: user?.fullName,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await apiFetch("/requests", { method: "POST", body: request });
+      toast.success("הבקשה נשלחה בהצלחה");
+      handleClose();
+    } catch (error) {
+      if (error.status === 401) {
+        toast.error("פג תוקף ההתחברות, יש להתחבר מחדש");
+      } else {
+        toast.error(error.message || "שגיאה בשליחת הבקשה");
+      }
+    }
+  };
+
+  const handleSpeedDialRequest = async (event) => {
+    event.preventDefault();
+    if (!sdPersonalId || !sdPhone || !sdDescription) {
+      setSdShowValidation(true);
+      return;
+    }
+
+    const request = {
+      type: "speed-dial",
+      typeLabel: "מחיקת/הוספת קיצורים",
+      name: sdPersonalId,
+      phone: sdPhone,
+      description: sdDescription,
+      existingSpeedDials: sdSpeedDials,
       status: "open",
       createdBy: user?.email,
       createdByName: user?.fullName,
@@ -160,6 +232,85 @@ export function HomePage() {
                 <Label htmlFor="request-new-name" className="font-medium text-slate-700">שם חדש <span className="text-red-500">*</span></Label>
                 <Input id="request-new-name" aria-invalid={showValidation && !newName} value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="הזן את השם החדש" className={`h-11 caret-blue-700 ${showValidation && !newName ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
                 {showValidation && !newName && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-slate-500"><span className="text-red-500">*</span> שדות חובה</p>
+                <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                  <Button type="button" variant="outline" onClick={handleClose} className="h-11">ביטול</Button>
+                  <Button type="submit" className="h-11 gap-2 bg-blue-600 px-6 hover:bg-blue-700">
+                    <Send className="h-4 w-4" />
+                    שליחת בקשה
+                  </Button>
+                </div>
+              </div>
+            </form>
+          ) : openTile?.id === 2 ? (
+            <form onSubmit={handleSpeedDialRequest} className="space-y-6 p-6 sm:p-8">
+              <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-blue-900">
+                <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                <div>
+                  <h2 className="font-semibold">פרטי הבקשה</h2>
+                  <p className="mt-1 text-sm text-blue-700">מלא את הפרטים ונעביר את הבקשה לטיפול.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="sd-personal-id" className="font-medium text-slate-700">מס' אישי <span className="text-red-500">*</span></Label>
+                  <Input id="sd-personal-id" aria-invalid={sdShowValidation && !sdPersonalId} value={sdPersonalId} onChange={(event) => setSdPersonalId(event.target.value)} placeholder="הזן מספר אישי" className={`h-11 caret-blue-700 ${sdShowValidation && !sdPersonalId ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
+                  {sdShowValidation && !sdPersonalId && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sd-phone" className="font-medium text-slate-700">מספר טלפון <span className="text-red-500">*</span></Label>
+                  <Input id="sd-phone" type="tel" inputMode="tel" aria-invalid={sdShowValidation && !sdPhone} value={sdPhone} onChange={(event) => setSdPhone(event.target.value.replace(/[^0-9*+#-]/g, ""))} placeholder="הזן מספר טלפון" className={`h-11 caret-blue-700 ${sdShowValidation && !sdPhone ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
+                  {sdShowValidation && !sdPhone && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
+                <div className="flex items-center gap-2 font-semibold text-slate-700">
+                  <PhoneCall className="h-4 w-4 text-blue-600" />
+                  קיצורים קיימים
+                </div>
+                {sdPhone.trim().length < 4 ? (
+                  <p className="text-slate-500">הזן מספר טלפון מלא כדי לבדוק אילו קיצורים קיימים כרגע.</p>
+                ) : sdChecking ? (
+                  <p className="text-slate-500">בודק קיצורים קיימים מול CUCM...</p>
+                ) : sdCheckError ? (
+                  <p className="font-medium text-rose-600">{sdCheckError}</p>
+                ) : sdSpeedDials && !sdSpeedDials.found ? (
+                  <p className="text-slate-500">מספר הטלפון {sdPhone} לא נמצא במערכת.</p>
+                ) : sdSpeedDials && sdSpeedDials.devices.length === 0 ? (
+                  <p className="text-slate-500">לא נמצאו מכשירים המשויכים למספר {sdPhone}.</p>
+                ) : sdSpeedDials ? (
+                  <div className="space-y-3">
+                    {sdSpeedDials.devices.map((d) => (
+                      <div key={d.device}>
+                        <p className="font-medium text-slate-700" dir="ltr">{d.device}</p>
+                        {d.error ? (
+                          <p className="text-rose-600">{d.error}</p>
+                        ) : d.speedDials.length === 0 ? (
+                          <p className="text-slate-500">אין קיצורים מוגדרים במכשיר זה.</p>
+                        ) : (
+                          <ul className="list-disc pr-5 text-slate-600">
+                            {d.speedDials.map((sd, i) => (
+                              <li key={i}>
+                                {sd.label || "ללא תווית"} — <span dir="ltr">{sd.number || "—"}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sd-description" className="font-medium text-slate-700">תיאור <span className="text-red-500">*</span></Label>
+                <Textarea id="sd-description" aria-invalid={sdShowValidation && !sdDescription} value={sdDescription} onChange={(event) => setSdDescription(event.target.value)} placeholder="תאר אילו קיצורים להוסיף/למחוק" className={`min-h-28 resize-none caret-blue-700 ${sdShowValidation && !sdDescription ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
+                {sdShowValidation && !sdDescription && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
               </div>
 
               <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">

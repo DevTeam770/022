@@ -5,7 +5,12 @@ import cors from "cors";
 import express from "express";
 import { readDb, writeDb } from "./db.js";
 import { requireAuth, signToken } from "./auth.js";
-import { getCucmLinesByPattern, updateCucmLine } from "./census.js";
+import { getCucmLinesByPattern, updateCucmLine, getCucmLine, getCucmPhone } from "./census.js";
+
+function toArray(value) {
+  if (value === undefined || value === null) return [];
+  return Array.isArray(value) ? value : [value];
+}
 
 const PORT = process.env.PORT || 3001;
 const SALT_ROUNDS = 10;
@@ -125,6 +130,40 @@ app.put("/cucm/lines/:pattern", requireAuth("technician", "admin"), async (req, 
     res.json(result);
   } catch (err) {
     res.status(502).json({ error: "לא ניתן היה לעדכן את הקו ב-Census", detail: err.message });
+  }
+});
+
+app.get("/cucm/speeddials", requireAuth(), async (req, res) => {
+  const pattern = req.query.pattern;
+  if (!pattern) {
+    return res.status(400).json({ error: "יש לספק מספר טלפון" });
+  }
+  try {
+    const line = await getCucmLine(pattern);
+    const deviceNames = toArray(line?.associatedDevices?.device);
+
+    const devices = await Promise.all(
+      deviceNames.map(async (device) => {
+        try {
+          const phone = await getCucmPhone(device);
+          const speedDials = toArray(phone?.speeddials?.speeddial).map((sd) => ({
+            index: sd.index,
+            label: sd.label,
+            number: sd.dirn,
+          }));
+          return { device, speedDials };
+        } catch (err) {
+          return { device, error: err.message };
+        }
+      })
+    );
+
+    res.json({ pattern, found: true, devices });
+  } catch (err) {
+    if (err.status === 404) {
+      return res.json({ pattern, found: false, devices: [] });
+    }
+    res.status(502).json({ error: "לא ניתן היה להתחבר ל-Census", detail: err.message });
   }
 });
 

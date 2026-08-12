@@ -221,6 +221,21 @@
       "createdAt": "2026-08-11T09:00:15.391Z",
       "id": "4a41f880-d1ef-4e7e-baa2-9b72ff5b6315",
       "rejectionReason": null
+    },
+    {
+      "type": "speed-dial",
+      "typeLabel": "מחיקת/הוספת קיצורים",
+      "name": "s8674576",
+      "phone": "5001000",
+      "description": "להוסיף קיצור של 5001234",
+      "existingSpeedDials": {
+        "pattern": "5001000",
+        "found": false,
+        "devices": []
+      },
+      "status": "open",
+      "createdAt": "2026-08-12T13:38:26.670Z",
+      "id": "e640f515-578b-4b5f-920e-4be89534a163"
     }
   ],
   "tickets": [

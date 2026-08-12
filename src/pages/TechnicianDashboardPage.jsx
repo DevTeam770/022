@@ -115,6 +115,8 @@ export function TechnicianDashboardPage() {
 
   const selectedTicket = tickets.find((t) => t.id === selectedTicketId);
   const selectedRequest = requests.find((r) => r.id === selectedRequestId);
+  const cucmChecked = cucmResult !== null;
+  const cucmLineFound = Array.isArray(cucmResult) && cucmResult.length > 0;
 
   const handleLogout = () => {
     logout();
@@ -179,7 +181,7 @@ export function TechnicianDashboardPage() {
   };
 
   const handleApplyNameToCucm = async () => {
-    if (!selectedRequest?.phone || !selectedRequest?.newName) return;
+    if (!selectedRequest?.phone || !selectedRequest?.newName || !cucmLineFound) return;
     setCucmApplyLoading(true);
     try {
       // ASCII Alerting Name is a display fallback for phones without Unicode
@@ -683,7 +685,7 @@ export function TechnicianDashboardPage() {
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-700"
                       onClick={handleApplyNameToCucm}
-                      disabled={!selectedRequest.phone || !selectedRequest.newName || cucmApplyLoading}
+                      disabled={!selectedRequest.phone || !selectedRequest.newName || !cucmLineFound || cucmApplyLoading}
                     >
                       {cucmApplyLoading ? "מעדכן שם ב-CUCM..." : `עדכן Alerting Name ל-"${selectedRequest.newName || ""}"`}
                     </Button>
@@ -691,7 +693,7 @@ export function TechnicianDashboardPage() {
                   {cucmResult && (
                     <div className="rounded-xl bg-slate-50 p-4 text-sm">
                       <p className="mb-2 font-semibold text-slate-700">תוצאה מ-Census</p>
-                      {Array.isArray(cucmResult) && cucmResult.length > 0 ? (
+                      {cucmLineFound ? (
                         <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs text-slate-600" dir="ltr">
                           {JSON.stringify(cucmResult, null, 2)}
                         </pre>
@@ -710,7 +712,17 @@ export function TechnicianDashboardPage() {
                       ✗ העדכון נכשל / אין חיבור ל-CUCM — יש לדחות את הבקשה
                     </p>
                   )}
-                  {cucmApplyStatus === null && (
+                  {cucmApplyStatus === null && !cucmChecked && (
+                    <p className="text-xs text-slate-500">
+                      יש לזהות תחילה שהקו קיים ב-CUCM (לחצו על "בדוק קו ב-CUCM"), לעדכן את השם, ורק אז ניתן לאשר את הבקשה
+                    </p>
+                  )}
+                  {cucmApplyStatus === null && cucmChecked && !cucmLineFound && (
+                    <p className="text-sm font-medium text-rose-600">
+                      ✗ לא זוהה קו תואם למספר {selectedRequest.phone} ב-CUCM — לא ניתן לעדכן שם, יש לדחות את הבקשה
+                    </p>
+                  )}
+                  {cucmApplyStatus === null && cucmChecked && cucmLineFound && (
                     <p className="text-xs text-slate-500">
                       יש לעדכן בהצלחה את השם ב-CUCM לפני שניתן לאשר את הבקשה
                     </p>
