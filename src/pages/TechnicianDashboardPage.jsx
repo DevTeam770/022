@@ -25,6 +25,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { apiFetch } from "@/lib/api";
+import { isAsciiSafe } from "@/lib/ascii";
 
 const statusLabels = {
   open: "פתוחה",
@@ -181,11 +182,16 @@ export function TechnicianDashboardPage() {
     if (!selectedRequest?.phone || !selectedRequest?.newName) return;
     setCucmApplyLoading(true);
     try {
+      // ASCII Alerting Name is a display fallback for phones without Unicode
+      // support - CUCM rejects it outright if it contains non-ASCII
+      // characters (e.g. Hebrew), which would fail the whole update. For a
+      // non-ASCII name it's cleared instead of left showing a stale value.
+      const asciiSafe = isAsciiSafe(selectedRequest.newName);
       await apiFetch(`/cucm/lines/${encodeURIComponent(selectedRequest.phone)}`, {
         method: "PUT",
         body: {
           alertingName: selectedRequest.newName,
-          asciiAlertingName: selectedRequest.newName,
+          asciiAlertingName: asciiSafe ? selectedRequest.newName : "",
         },
       });
       setCucmApplyStatus("success");

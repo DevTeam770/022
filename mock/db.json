@@ -153,9 +153,10 @@
       "phone": "5878790",
       "description": "לשנות מפינקלשטיין ל'שוורצמן'",
       "newName": "אלברט שוורצמן",
-      "status": "open",
+      "status": "closed",
       "createdAt": "2026-08-04T08:34:19.477Z",
-      "id": "I8htSFW75KE"
+      "id": "I8htSFW75KE",
+      "rejectionReason": "סתם סתם סתם"
     },
     {
       "type": "name-change",
@@ -207,6 +208,18 @@
       "createdByName": "יעקב כפר",
       "createdAt": "2026-08-06T12:12:34.133Z",
       "id": "ec7836f3-46d7-4e39-bbb3-3e150286a809",
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5001000",
+      "description": "שינוי שם ל\"שוורצמן\"",
+      "newName": "שוורצמן",
+      "status": "resolved",
+      "createdAt": "2026-08-11T09:00:15.391Z",
+      "id": "4a41f880-d1ef-4e7e-baa2-9b72ff5b6315",
       "rejectionReason": null
     }
   ],
