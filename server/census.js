@@ -37,12 +37,18 @@ export async function updateCucmLine(pattern, routePartition, fields) {
   });
 }
 
-export async function getCucmLine(pattern, routePartition) {
-  return censusFetch(`/api/cucm/lines/${encodeURIComponent(pattern)}`, {
-    searchParams: { route_partition: routePartition },
-  });
+export async function getCucmLineDevices(pattern) {
+  return censusFetch(`/api/cucm/lines/${encodeURIComponent(pattern)}/devices`);
 }
 
 export async function getCucmPhone(name) {
   return censusFetch(`/api/cucm/phones/${encodeURIComponent(name)}`);
+}
+
+export async function addCucmPhoneSpeedDial(name, { number, label, index }) {
+  return censusFetch(`/api/cucm/phones/${encodeURIComponent(name)}/speeddials`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ number, label, index }),
+  });
 }

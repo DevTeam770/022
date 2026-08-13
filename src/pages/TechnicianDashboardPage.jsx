@@ -4,6 +4,7 @@ import { Ticket, CheckCircle2, Wrench, Activity, Flag, ClipboardList, User, LogO
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
@@ -86,6 +87,12 @@ export function TechnicianDashboardPage() {
   const [cucmLoading, setCucmLoading] = useState(false);
   const [cucmApplyLoading, setCucmApplyLoading] = useState(false);
   const [cucmApplyStatus, setCucmApplyStatus] = useState(null); // null | "success" | "error"
+  const [speedDialsResult, setSpeedDialsResult] = useState(null);
+  const [speedDialsLoading, setSpeedDialsLoading] = useState(false);
+  const [speedDialsError, setSpeedDialsError] = useState("");
+  const [newSpeedDialNumber, setNewSpeedDialNumber] = useState("");
+  const [newSpeedDialLabel, setNewSpeedDialLabel] = useState("");
+  const [speedDialAddingDevice, setSpeedDialAddingDevice] = useState(null);
 
   const fetchTickets = () => {
     apiFetch("/tickets").then(setTickets).catch(() => toast.error("שגיאה בטעינת התקלות"));
@@ -163,6 +170,48 @@ export function TechnicianDashboardPage() {
     setRejectReason("");
     setCucmResult(null);
     setCucmApplyStatus(null);
+    setSpeedDialsResult(null);
+    setSpeedDialsError("");
+    setNewSpeedDialNumber("");
+    setNewSpeedDialLabel("");
+    setSpeedDialAddingDevice(null);
+  };
+
+  const handleCheckSpeedDials = async () => {
+    if (!selectedRequest?.phone) return;
+    setSpeedDialsLoading(true);
+    setSpeedDialsResult(null);
+    setSpeedDialsError("");
+    try {
+      const data = await apiFetch(`/cucm/speeddials?pattern=${encodeURIComponent(selectedRequest.phone)}`);
+      setSpeedDialsResult(data);
+    } catch (err) {
+      setSpeedDialsError(err.message || "שגיאה בבדיקת הקיצורים הקיימים");
+    } finally {
+      setSpeedDialsLoading(false);
+    }
+  };
+
+  const handleAddSpeedDial = async (device) => {
+    if (!newSpeedDialNumber) {
+      toast.error("יש להזין מספר לקיצור");
+      return;
+    }
+    setSpeedDialAddingDevice(device);
+    try {
+      await apiFetch(`/cucm/phones/${encodeURIComponent(device)}/speeddials`, {
+        method: "POST",
+        body: { number: newSpeedDialNumber, label: newSpeedDialLabel },
+      });
+      toast.success("הקיצור נוסף בהצלחה ב-CUCM");
+      setNewSpeedDialNumber("");
+      setNewSpeedDialLabel("");
+      await handleCheckSpeedDials();
+    } catch (err) {
+      toast.error(err.message || "שגיאה בהוספת הקיצור ב-CUCM");
+    } finally {
+      setSpeedDialAddingDevice(null);
+    }
   };
 
   const handleCheckCucm = async () => {
@@ -726,6 +775,74 @@ export function TechnicianDashboardPage() {
                     <p className="text-xs text-slate-500">
                       יש לעדכן בהצלחה את השם ב-CUCM לפני שניתן לאשר את הבקשה
                     </p>
+                  )}
+                </div>
+              )}
+
+              {selectedRequest.type === "speed-dial" && (
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCheckSpeedDials}
+                    disabled={!selectedRequest.phone || speedDialsLoading}
+                  >
+                    {speedDialsLoading ? "בודק קיצורים מול CUCM..." : "בדוק קיצורים קיימים ב-CUCM (Census)"}
+                  </Button>
+                  {speedDialsError && (
+                    <p className="text-sm font-medium text-rose-600">{speedDialsError}</p>
+                  )}
+                  {speedDialsResult && !speedDialsResult.found && (
+                    <p className="text-sm text-slate-500">מספר הטלפון {selectedRequest.phone} לא נמצא ב-CUCM.</p>
+                  )}
+                  {speedDialsResult && speedDialsResult.found && (
+                    <div className="space-y-3 rounded-xl bg-slate-50 p-4 text-sm">
+                      {speedDialsResult.devices.map((d) => (
+                        <div key={d.device}>
+                          <p className="font-medium text-slate-700" dir="ltr">{d.device}</p>
+                          {d.error ? (
+                            <p className="text-rose-600">{d.error}</p>
+                          ) : d.speedDials.length === 0 ? (
+                            <p className="text-slate-500">אין קיצורים מוגדרים במכשיר זה.</p>
+                          ) : (
+                            <ul className="list-disc pr-5 text-slate-600">
+                              {d.speedDials.map((sd, i) => (
+                                <li key={i}>
+                                  {sd.label || "ללא תווית"} — <span dir="ltr">{sd.number || "—"}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {!d.error && (
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <Input
+                                value={newSpeedDialNumber}
+                                onChange={(e) => setNewSpeedDialNumber(e.target.value.replace(/[^0-9*+#-]/g, ""))}
+                                placeholder="מספר לקיצור"
+                                className="h-9 w-36 caret-blue-700"
+                                dir="ltr"
+                              />
+                              <Input
+                                value={newSpeedDialLabel}
+                                onChange={(e) => setNewSpeedDialLabel(e.target.value)}
+                                placeholder="תווית (אופציונלי)"
+                                className="h-9 w-40 caret-blue-700"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() => handleAddSpeedDial(d.device)}
+                                disabled={!newSpeedDialNumber || speedDialAddingDevice === d.device}
+                              >
+                                {speedDialAddingDevice === d.device ? "מוסיף..." : "הוסף קיצור"}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}

@@ -236,6 +236,57 @@
       "status": "open",
       "createdAt": "2026-08-12T13:38:26.670Z",
       "id": "e640f515-578b-4b5f-920e-4be89534a163"
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s9515537",
+      "phone": "5001000",
+      "description": "שינוי שם ל-יוני המלך",
+      "newName": "יוני המלך",
+      "status": "resolved",
+      "createdBy": "yaakov.kaper@gmail.com",
+      "createdByName": "yaakov.kaper",
+      "createdAt": "2026-08-13T11:14:06.020Z",
+      "id": "933bb178-7378-4b0a-b974-8164556c5e26",
+      "rejectionReason": null
+    },
+    {
+      "type": "speed-dial",
+      "typeLabel": "מחיקת/הוספת קיצורים",
+      "name": "s8674576",
+      "phone": "5001000",
+      "description": "להוסיף את 5002000",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-13T12:51:37.188Z",
+      "id": "026b70a9-3734-4191-97f9-129f9e0e591b",
+      "rejectionReason": null
+    },
+    {
+      "type": "name-change",
+      "typeLabel": "שינוי/הוספת שם",
+      "name": "s8674576",
+      "phone": "5005786",
+      "description": "לשנות את השם ל\"גורעוויטש\"",
+      "newName": "גורעוויטש",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-13T13:05:38.737Z",
+      "id": "d5ecacd4-edc0-4f5d-9762-53bc96a312ea",
+      "rejectionReason": null
+    },
+    {
+      "type": "speed-dial",
+      "typeLabel": "מחיקת/הוספת קיצורים",
+      "name": "s8674576",
+      "phone": "5005786",
+      "description": "להוסיף את 5001002 עם השם אלכס",
+      "status": "resolved",
+      "createdByName": "יעקב כפר",
+      "createdAt": "2026-08-13T13:25:40.765Z",
+      "id": "54c2594d-ea4d-4684-b05e-7f6d8309bb0a",
+      "rejectionReason": null
     }
   ],
   "tickets": [

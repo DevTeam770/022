@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { X, FileText, Send, PhoneCall } from "lucide-react";
+import { useState } from "react";
+import { X, FileText, Send } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,9 +27,6 @@ export function HomePage() {
   const [sdPhone, setSdPhone] = useState("");
   const [sdDescription, setSdDescription] = useState("");
   const [sdShowValidation, setSdShowValidation] = useState(false);
-  const [sdSpeedDials, setSdSpeedDials] = useState(null);
-  const [sdChecking, setSdChecking] = useState(false);
-  const [sdCheckError, setSdCheckError] = useState("");
 
   const handleClose = () => {
     setOpenTile(null);
@@ -42,34 +39,7 @@ export function HomePage() {
     setSdPhone("");
     setSdDescription("");
     setSdShowValidation(false);
-    setSdSpeedDials(null);
-    setSdChecking(false);
-    setSdCheckError("");
   };
-
-  useEffect(() => {
-    if (openTile?.id !== 2) return;
-    if (sdPhone.trim().length < 4) {
-      setSdSpeedDials(null);
-      setSdCheckError("");
-      setSdChecking(false);
-      return;
-    }
-    setSdChecking(true);
-    setSdCheckError("");
-    const timeout = setTimeout(async () => {
-      try {
-        const data = await apiFetch(`/cucm/speeddials?pattern=${encodeURIComponent(sdPhone.trim())}`);
-        setSdSpeedDials(data);
-      } catch (err) {
-        setSdSpeedDials(null);
-        setSdCheckError(err.message || "שגיאה בבדיקת הקיצורים הקיימים");
-      } finally {
-        setSdChecking(false);
-      }
-    }, 600);
-    return () => clearTimeout(timeout);
-  }, [sdPhone, openTile]);
 
   const handleNameRequest = async (event) => {
     event.preventDefault();
@@ -117,7 +87,6 @@ export function HomePage() {
       name: sdPersonalId,
       phone: sdPhone,
       description: sdDescription,
-      existingSpeedDials: sdSpeedDials,
       status: "open",
       createdBy: user?.email,
       createdByName: user?.fullName,
@@ -266,45 +235,6 @@ export function HomePage() {
                   <Input id="sd-phone" type="tel" inputMode="tel" aria-invalid={sdShowValidation && !sdPhone} value={sdPhone} onChange={(event) => setSdPhone(event.target.value.replace(/[^0-9*+#-]/g, ""))} placeholder="הזן מספר טלפון" className={`h-11 caret-blue-700 ${sdShowValidation && !sdPhone ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
                   {sdShowValidation && !sdPhone && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
                 </div>
-              </div>
-
-              <div className="space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
-                <div className="flex items-center gap-2 font-semibold text-slate-700">
-                  <PhoneCall className="h-4 w-4 text-blue-600" />
-                  קיצורים קיימים
-                </div>
-                {sdPhone.trim().length < 4 ? (
-                  <p className="text-slate-500">הזן מספר טלפון מלא כדי לבדוק אילו קיצורים קיימים כרגע.</p>
-                ) : sdChecking ? (
-                  <p className="text-slate-500">בודק קיצורים קיימים מול CUCM...</p>
-                ) : sdCheckError ? (
-                  <p className="font-medium text-rose-600">{sdCheckError}</p>
-                ) : sdSpeedDials && !sdSpeedDials.found ? (
-                  <p className="text-slate-500">מספר הטלפון {sdPhone} לא נמצא במערכת.</p>
-                ) : sdSpeedDials && sdSpeedDials.devices.length === 0 ? (
-                  <p className="text-slate-500">לא נמצאו מכשירים המשויכים למספר {sdPhone}.</p>
-                ) : sdSpeedDials ? (
-                  <div className="space-y-3">
-                    {sdSpeedDials.devices.map((d) => (
-                      <div key={d.device}>
-                        <p className="font-medium text-slate-700" dir="ltr">{d.device}</p>
-                        {d.error ? (
-                          <p className="text-rose-600">{d.error}</p>
-                        ) : d.speedDials.length === 0 ? (
-                          <p className="text-slate-500">אין קיצורים מוגדרים במכשיר זה.</p>
-                        ) : (
-                          <ul className="list-disc pr-5 text-slate-600">
-                            {d.speedDials.map((sd, i) => (
-                              <li key={i}>
-                                {sd.label || "ללא תווית"} — <span dir="ltr">{sd.number || "—"}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
               </div>
 
               <div className="space-y-2">

@@ -5,7 +5,13 @@ import cors from "cors";
 import express from "express";
 import { readDb, writeDb } from "./db.js";
 import { requireAuth, signToken } from "./auth.js";
-import { getCucmLinesByPattern, updateCucmLine, getCucmLine, getCucmPhone } from "./census.js";
+import {
+  getCucmLinesByPattern,
+  updateCucmLine,
+  getCucmLineDevices,
+  getCucmPhone,
+  addCucmPhoneSpeedDial,
+} from "./census.js";
 
 function toArray(value) {
   if (value === undefined || value === null) return [];
@@ -119,7 +125,30 @@ app.put("/cucm/lines/:pattern", requireAuth("technician", "admin"), async (req, 
     return res.status(400).json({ error: "יש לספק לפחות שדה אחד לעדכון" });
   }
   try {
-    const result = await updateCucmLine(req.params.pattern, req.query.routePartition, {
+    // The same digits can exist as more than one CUCM line across different
+    // route partitions (e.g. a real, device-attached line plus an orphaned
+    // one with no partition). Without an explicit partition, CUCM's
+    // updateLine silently picks one of them - which can update the wrong
+    // line. Resolve to the line that actually has a device on it instead of
+    // trusting CUCM's default pick.
+    const matches = await getCucmLinesByPattern(req.params.pattern);
+    const exactWithDevice = matches.filter((m) => m.pattern === req.params.pattern && m.device);
+    const partitions = [...new Set(exactWithDevice.map((m) => m.route_partition))];
+
+    if (partitions.length === 0) {
+      return res.status(404).json({ error: "לא נמצא קו עם מכשיר משויך למספר זה ב-CUCM" });
+    }
+    if (partitions.length > 1) {
+      return res.status(409).json({
+        error: "נמצאו כמה קווים עם מכשיר משויך למספר זה במחיצות שונות — לא ניתן לעדכן אוטומטית",
+        detail: partitions.join(", "),
+      });
+    }
+    if (!partitions[0]) {
+      return res.status(422).json({ error: "לקו המשויך למכשיר עבור מספר זה אין Route Partition מוגדר ב-CUCM — לא ניתן לעדכן בבטחה" });
+    }
+
+    const result = await updateCucmLine(req.params.pattern, partitions[0], {
       alerting_name: alertingName,
       ascii_alerting_name: asciiAlertingName,
       description,
@@ -133,14 +162,16 @@ app.put("/cucm/lines/:pattern", requireAuth("technician", "admin"), async (req, 
   }
 });
 
-app.get("/cucm/speeddials", requireAuth(), async (req, res) => {
+app.get("/cucm/speeddials", requireAuth("technician", "admin"), async (req, res) => {
   const pattern = req.query.pattern;
   if (!pattern) {
     return res.status(400).json({ error: "יש לספק מספר טלפון" });
   }
   try {
-    const line = await getCucmLine(pattern);
-    const deviceNames = toArray(line?.associatedDevices?.device);
+    const deviceNames = await getCucmLineDevices(pattern);
+    if (deviceNames.length === 0) {
+      return res.json({ pattern, found: false, devices: [] });
+    }
 
     const devices = await Promise.all(
       deviceNames.map(async (device) => {
@@ -160,10 +191,23 @@ app.get("/cucm/speeddials", requireAuth(), async (req, res) => {
 
     res.json({ pattern, found: true, devices });
   } catch (err) {
-    if (err.status === 404) {
-      return res.json({ pattern, found: false, devices: [] });
-    }
     res.status(502).json({ error: "לא ניתן היה להתחבר ל-Census", detail: err.message });
+  }
+});
+
+app.post("/cucm/phones/:device/speeddials", requireAuth("technician", "admin"), async (req, res) => {
+  const { number, label, index } = req.body || {};
+  if (!number) {
+    return res.status(400).json({ error: "יש לספק מספר עבור הקיצור" });
+  }
+  try {
+    const result = await addCucmPhoneSpeedDial(req.params.device, { number, label, index });
+    res.status(201).json(result);
+  } catch (err) {
+    if (err.status === 409) {
+      return res.status(409).json({ error: "כפתור הקיצור שנבחר כבר תפוס במכשיר זה", detail: err.message });
+    }
+    res.status(502).json({ error: "לא ניתן היה להוסיף את הקיצור ב-Census", detail: err.message });
   }
 });
 
