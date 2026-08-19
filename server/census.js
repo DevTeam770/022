@@ -52,3 +52,10 @@ export async function addCucmPhoneSpeedDial(name, { number, label, index }) {
     body: JSON.stringify({ number, label, index }),
   });
 }
+
+export async function removeCucmPhoneSpeedDial(name, index) {
+  return censusFetch(
+    `/api/cucm/phones/${encodeURIComponent(name)}/speeddials/${encodeURIComponent(index)}`,
+    { method: "DELETE" }
+  );
+}

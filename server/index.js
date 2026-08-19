@@ -11,6 +11,7 @@ import {
   getCucmLineDevices,
   getCucmPhone,
   addCucmPhoneSpeedDial,
+  removeCucmPhoneSpeedDial,
 } from "./census.js";
 
 function toArray(value) {
@@ -208,6 +209,22 @@ app.post("/cucm/phones/:device/speeddials", requireAuth("technician", "admin"), 
       return res.status(409).json({ error: "כפתור הקיצור שנבחר כבר תפוס במכשיר זה", detail: err.message });
     }
     res.status(502).json({ error: "לא ניתן היה להוסיף את הקיצור ב-Census", detail: err.message });
+  }
+});
+
+app.delete("/cucm/phones/:device/speeddials/:index", requireAuth("technician", "admin"), async (req, res) => {
+  const index = Number(req.params.index);
+  if (!Number.isInteger(index) || index < 1) {
+    return res.status(400).json({ error: "מספר כפתור הקיצור אינו תקין" });
+  }
+  try {
+    const result = await removeCucmPhoneSpeedDial(req.params.device, index);
+    res.json(result);
+  } catch (err) {
+    if (err.status === 404) {
+      return res.status(404).json({ error: "הקיצור כבר לא קיים במכשיר — ייתכן שנמחק בינתיים", detail: err.message });
+    }
+    res.status(502).json({ error: "לא ניתן היה למחוק את הקיצור ב-Census", detail: err.message });
   }
 });
 

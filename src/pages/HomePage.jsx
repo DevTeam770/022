@@ -23,6 +23,7 @@ export function HomePage() {
   const [newName, setNewName] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
+  const [sdAction, setSdAction] = useState("add");
   const [sdPersonalId, setSdPersonalId] = useState("");
   const [sdPhone, setSdPhone] = useState("");
   const [sdDescription, setSdDescription] = useState("");
@@ -35,6 +36,7 @@ export function HomePage() {
     setDescription("");
     setNewName("");
     setShowValidation(false);
+    setSdAction("add");
     setSdPersonalId("");
     setSdPhone("");
     setSdDescription("");
@@ -83,7 +85,8 @@ export function HomePage() {
 
     const request = {
       type: "speed-dial",
-      typeLabel: "מחיקת/הוספת קיצורים",
+      typeLabel: sdAction === "delete" ? "מחיקת קיצורים" : "הוספת קיצורים",
+      action: sdAction,
       name: sdPersonalId,
       phone: sdPhone,
       description: sdDescription,
@@ -224,6 +227,30 @@ export function HomePage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label className="font-medium text-slate-700">סוג הבקשה <span className="text-red-500">*</span></Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: "add", label: "הוספת קיצור" },
+                    { value: "delete", label: "מחיקת קיצור" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setSdAction(option.value)}
+                      aria-pressed={sdAction === option.value}
+                      className={`h-11 rounded-md border text-sm font-medium transition-colors ${
+                        sdAction === option.value
+                          ? "border-blue-600 bg-blue-50 text-blue-800"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="sd-personal-id" className="font-medium text-slate-700">מס' אישי <span className="text-red-500">*</span></Label>
@@ -239,7 +266,7 @@ export function HomePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="sd-description" className="font-medium text-slate-700">תיאור <span className="text-red-500">*</span></Label>
-                <Textarea id="sd-description" aria-invalid={sdShowValidation && !sdDescription} value={sdDescription} onChange={(event) => setSdDescription(event.target.value)} placeholder="תאר אילו קיצורים להוסיף/למחוק" className={`min-h-28 resize-none caret-blue-700 ${sdShowValidation && !sdDescription ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
+                <Textarea id="sd-description" aria-invalid={sdShowValidation && !sdDescription} value={sdDescription} onChange={(event) => setSdDescription(event.target.value)} placeholder={sdAction === "delete" ? "ציין אילו קיצורים למחוק (מספר או תווית)" : "ציין אילו קיצורים להוסיף (מספר ותווית)"} className={`min-h-28 resize-none caret-blue-700 ${sdShowValidation && !sdDescription ? "border-red-500 focus-visible:ring-red-500" : ""}`} />
                 {sdShowValidation && !sdDescription && <p className="text-sm font-medium text-red-600">נא למלא שדה זה</p>}
               </div>
 

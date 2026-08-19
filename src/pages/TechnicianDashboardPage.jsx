@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, CheckCircle2, Wrench, Activity, Flag, ClipboardList, User, LogOut, FileText } from "lucide-react";
+import { Ticket, CheckCircle2, Wrench, Activity, Flag, ClipboardList, User, LogOut, FileText, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -93,6 +103,11 @@ export function TechnicianDashboardPage() {
   const [newSpeedDialNumber, setNewSpeedDialNumber] = useState("");
   const [newSpeedDialLabel, setNewSpeedDialLabel] = useState("");
   const [speedDialAddingDevice, setSpeedDialAddingDevice] = useState(null);
+  const [speedDialRemoving, setSpeedDialRemoving] = useState(false);
+  const [speedDialPendingDelete, setSpeedDialPendingDelete] = useState(null);
+  // Mirrors cucmApplyStatus for name changes: a speed-dial request can only be
+  // approved once the work it asked for actually landed in CUCM.
+  const [speedDialApplyStatus, setSpeedDialApplyStatus] = useState(null); // null | "success"
 
   const fetchTickets = () => {
     apiFetch("/tickets").then(setTickets).catch(() => toast.error("שגיאה בטעינת התקלות"));
@@ -175,6 +190,9 @@ export function TechnicianDashboardPage() {
     setNewSpeedDialNumber("");
     setNewSpeedDialLabel("");
     setSpeedDialAddingDevice(null);
+    setSpeedDialRemoving(false);
+    setSpeedDialPendingDelete(null);
+    setSpeedDialApplyStatus(null);
   };
 
   const handleCheckSpeedDials = async () => {
@@ -203,7 +221,8 @@ export function TechnicianDashboardPage() {
         method: "POST",
         body: { number: newSpeedDialNumber, label: newSpeedDialLabel },
       });
-      toast.success("הקיצור נוסף בהצלחה ב-CUCM");
+      toast.success("הקיצור נוסף בהצלחה ב-CUCM — ניתן לאשר את הבקשה");
+      setSpeedDialApplyStatus("success");
       setNewSpeedDialNumber("");
       setNewSpeedDialLabel("");
       await handleCheckSpeedDials();
@@ -211,6 +230,56 @@ export function TechnicianDashboardPage() {
       toast.error(err.message || "שגיאה בהוספת הקיצור ב-CUCM");
     } finally {
       setSpeedDialAddingDevice(null);
+    }
+  };
+
+  // Deletion is offered only for the button the request actually named. A
+  // technician opening someone's phone should never be one stray click away
+  // from removing a shortcut nobody asked about, so anything unmatched simply
+  // has no delete control.
+  //
+  // Requests carry free text rather than a structured target, so a speed dial
+  // counts as "requested" when its number appears as a whole token in the
+  // description, or its label appears in it. Substring matching on the number
+  // would let a short number match a longer unrelated one.
+  // The same rule governs adding: the form only exists for a request that
+  // asked for one. Requests predating the add/delete field carry no action at
+  // all, and those get neither control - an unclear request is not a mandate.
+  const isSpeedDialDeleteRequest = selectedRequest?.action === "delete";
+  const isSpeedDialAddRequest = selectedRequest?.action === "add";
+  // Only a request that names a concrete action can be held back until it is
+  // carried out. Older requests offer no controls at all, so gating approval on
+  // them would leave the technician with no way forward.
+  const speedDialNeedsWork =
+    selectedRequest?.type === "speed-dial" && (isSpeedDialAddRequest || isSpeedDialDeleteRequest);
+
+  const isSpeedDialRequested = (sd) => {
+    if (!isSpeedDialDeleteRequest) return false;
+    const text = (selectedRequest?.description || "").toLowerCase();
+    if (!text) return false;
+    const number = String(sd.number ?? "").trim();
+    const label = String(sd.label ?? "").trim().toLowerCase();
+    const tokens = text.match(/[0-9*+#-]{2,}/g) || [];
+    return (!!number && tokens.includes(number)) || (!!label && text.includes(label));
+  };
+
+  const handleRemoveSpeedDial = async () => {
+    const target = speedDialPendingDelete;
+    if (!target) return;
+    setSpeedDialRemoving(true);
+    try {
+      await apiFetch(
+        `/cucm/phones/${encodeURIComponent(target.device)}/speeddials/${target.index}`,
+        { method: "DELETE" }
+      );
+      toast.success("הקיצור נמחק בהצלחה ב-CUCM — ניתן לאשר את הבקשה");
+      setSpeedDialApplyStatus("success");
+      setSpeedDialPendingDelete(null);
+      await handleCheckSpeedDials();
+    } catch (err) {
+      toast.error(err.message || "שגיאה במחיקת הקיצור ב-CUCM");
+    } finally {
+      setSpeedDialRemoving(false);
     }
   };
 
@@ -806,15 +875,62 @@ export function TechnicianDashboardPage() {
                           ) : d.speedDials.length === 0 ? (
                             <p className="text-slate-500">אין קיצורים מוגדרים במכשיר זה.</p>
                           ) : (
-                            <ul className="list-disc pr-5 text-slate-600">
-                              {d.speedDials.map((sd, i) => (
-                                <li key={i}>
-                                  {sd.label || "ללא תווית"} — <span dir="ltr">{sd.number || "—"}</span>
-                                </li>
-                              ))}
+                            <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                              {d.speedDials.map((sd, i) => {
+                                const requested = isSpeedDialRequested(sd);
+                                return (
+                                  <li
+                                    key={i}
+                                    className={`group flex items-center gap-3 px-3 py-2 ${
+                                      requested ? "bg-rose-50/60" : ""
+                                    }`}
+                                  >
+                                    <span className="w-16 shrink-0 text-xs text-slate-400">
+                                      כפתור {sd.index}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate font-medium text-slate-800">
+                                      {sd.label || <span className="font-normal text-slate-400">ללא תווית</span>}
+                                    </span>
+                                    <span className="shrink-0 tabular-nums text-slate-600" dir="ltr">
+                                      {sd.number || "—"}
+                                    </span>
+                                    {requested && (
+                                      <span className="shrink-0 rounded-full border border-rose-200 bg-white px-2 py-0.5 text-[11px] font-medium text-rose-700">
+                                        מבוקש למחיקה
+                                      </span>
+                                    )}
+                                    <span className="flex w-8 shrink-0 justify-end">
+                                      {requested && (
+                                        <Button
+                                          type="button"
+                                          size="icon"
+                                          variant="ghost"
+                                          title={`מחיקת הקיצור ${sd.label || sd.number}`}
+                                          className="h-8 w-8 text-slate-400 hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-rose-500"
+                                          onClick={() => setSpeedDialPendingDelete({ device: d.device, ...sd })}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                          <span className="sr-only">מחיקת הקיצור {sd.label || sd.number}</span>
+                                        </Button>
+                                      )}
+                                    </span>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           )}
-                          {!d.error && (
+                          {!d.error && isSpeedDialDeleteRequest && d.speedDials.length > 0 &&
+                            !d.speedDials.some(isSpeedDialRequested) && (
+                              <p className="mt-2 text-xs text-amber-700">
+                                לא זוהה במכשיר קיצור התואם לתיאור הבקשה — ודאו שהתיאור כולל את מספר הקיצור או את התווית שלו.
+                              </p>
+                            )}
+                          {!d.error && !isSpeedDialAddRequest && !isSpeedDialDeleteRequest && (
+                            <p className="mt-2 text-xs text-slate-500">
+                              בקשה זו אינה בקשת הוספה או מחיקה, ולכן לא מוצגות פעולות על הקיצורים.
+                            </p>
+                          )}
+                          {!d.error && isSpeedDialAddRequest && (
                             <div className="mt-2 flex flex-wrap items-center gap-2">
                               <Input
                                 value={newSpeedDialNumber}
@@ -847,12 +963,31 @@ export function TechnicianDashboardPage() {
                 </div>
               )}
 
+              {speedDialNeedsWork && (
+                <div className="text-right">
+                  {speedDialApplyStatus === "success" ? (
+                    <p className="text-sm font-medium text-emerald-600">
+                      ✓ הפעולה בוצעה בהצלחה ב-CUCM — ניתן לאשר את הבקשה
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      {isSpeedDialDeleteRequest
+                        ? 'יש לבדוק את הקיצורים ב-CUCM ולמחוק את הקיצור המבוקש, ורק אז ניתן לאשר את הבקשה'
+                        : 'יש לבדוק את הקיצורים ב-CUCM ולהוסיף את הקיצור המבוקש, ורק אז ניתן לאשר את הבקשה'}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="destructive"
                   onClick={() => setIsRejectDialogOpen(true)}
-                  disabled={selectedRequest.type === "name-change" && cucmApplyStatus === "success"}
+                  disabled={
+                    (selectedRequest.type === "name-change" && cucmApplyStatus === "success") ||
+                    (speedDialNeedsWork && speedDialApplyStatus === "success")
+                  }
                 >
                   לא אשר
                 </Button>
@@ -860,7 +995,10 @@ export function TechnicianDashboardPage() {
                   type="button"
                   onClick={handleApproveRequest}
                   className="bg-emerald-600 hover:bg-emerald-700"
-                  disabled={selectedRequest.type === "name-change" && cucmApplyStatus !== "success"}
+                  disabled={
+                    (selectedRequest.type === "name-change" && cucmApplyStatus !== "success") ||
+                    (speedDialNeedsWork && speedDialApplyStatus !== "success")
+                  }
                 >
                   אשר
                 </Button>
@@ -890,6 +1028,66 @@ export function TechnicianDashboardPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!speedDialPendingDelete}
+        onOpenChange={(open) => !open && !speedDialRemoving && setSpeedDialPendingDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                <Trash2 className="h-4 w-4 text-rose-600" />
+              </span>
+              <div className="space-y-2">
+                <AlertDialogTitle>מחיקת קיצור חיוג</AlertDialogTitle>
+                <AlertDialogDescription>
+                  הקיצור יימחק מיד מהמכשיר ב-CUCM. לא ניתן לבטל את הפעולה.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+
+          {speedDialPendingDelete && (
+            <dl className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">תווית</dt>
+                <dd className="font-medium text-slate-800">
+                  {speedDialPendingDelete.label || "ללא תווית"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">מספר</dt>
+                <dd className="font-medium tabular-nums text-slate-800" dir="ltr">
+                  {speedDialPendingDelete.number || "—"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">מיקום</dt>
+                <dd className="text-slate-800">כפתור {speedDialPendingDelete.index}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">מכשיר</dt>
+                <dd className="text-slate-800" dir="ltr">{speedDialPendingDelete.device}</dd>
+              </div>
+            </dl>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={speedDialRemoving}>ביטול</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                handleRemoveSpeedDial();
+              }}
+              disabled={speedDialRemoving}
+              className="bg-rose-600 text-white shadow-sm hover:bg-rose-700"
+            >
+              {speedDialRemoving ? "מוחק..." : "מחיקת הקיצור"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Toaster />
     </div>
