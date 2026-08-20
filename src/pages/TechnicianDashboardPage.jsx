@@ -103,6 +103,11 @@ export function TechnicianDashboardPage() {
   const [newSpeedDialNumber, setNewSpeedDialNumber] = useState("");
   const [newSpeedDialLabel, setNewSpeedDialLabel] = useState("");
   const [speedDialAddingDevice, setSpeedDialAddingDevice] = useState(null);
+  // When the same number is shared by more than one physical device, acting
+  // on the wrong one is a real risk - the technician must confirm which
+  // device they're holding by typing the last 5 characters of its ID before
+  // any add/delete control for it is enabled.
+  const [speedDialDeviceConfirm, setSpeedDialDeviceConfirm] = useState("");
   const [speedDialRemoving, setSpeedDialRemoving] = useState(false);
   const [speedDialPendingDelete, setSpeedDialPendingDelete] = useState(null);
   // Mirrors cucmApplyStatus for name changes: a speed-dial request can only be
@@ -190,6 +195,7 @@ export function TechnicianDashboardPage() {
     setNewSpeedDialNumber("");
     setNewSpeedDialLabel("");
     setSpeedDialAddingDevice(null);
+    setSpeedDialDeviceConfirm("");
     setSpeedDialRemoving(false);
     setSpeedDialPendingDelete(null);
     setSpeedDialApplyStatus(null);
@@ -200,6 +206,7 @@ export function TechnicianDashboardPage() {
     setSpeedDialsLoading(true);
     setSpeedDialsResult(null);
     setSpeedDialsError("");
+    setSpeedDialDeviceConfirm("");
     try {
       const data = await apiFetch(`/cucm/speeddials?pattern=${encodeURIComponent(selectedRequest.phone)}`);
       setSpeedDialsResult(data);
@@ -252,6 +259,18 @@ export function TechnicianDashboardPage() {
   // them would leave the technician with no way forward.
   const speedDialNeedsWork =
     selectedRequest?.type === "speed-dial" && (isSpeedDialAddRequest || isSpeedDialDeleteRequest);
+
+  // A DN can be shared by more than one physical device. Acting on the wrong
+  // one is a real risk, so once there's more than one candidate, add/delete
+  // controls for a device stay locked until the technician confirms which
+  // one they're holding by typing the last 5 characters of its device ID.
+  const speedDialDeviceConfirmNeeded =
+    speedDialsResult?.found && speedDialsResult.devices.length > 1;
+  const isSpeedDialDeviceConfirmed = (device) => {
+    if (!speedDialDeviceConfirmNeeded) return true;
+    const suffix = speedDialDeviceConfirm.trim().toLowerCase();
+    return suffix.length === 5 && device.toLowerCase().endsWith(suffix);
+  };
 
   const isSpeedDialRequested = (sd) => {
     if (!isSpeedDialDeleteRequest) return false;
@@ -867,6 +886,22 @@ export function TechnicianDashboardPage() {
                   )}
                   {speedDialsResult && speedDialsResult.found && (
                     <div className="space-y-3 rounded-xl bg-slate-50 p-4 text-sm">
+                      {speedDialDeviceConfirmNeeded && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                          <p className="mb-2 text-xs font-medium text-amber-800">
+                            נמצא יותר ממכשיר אחד עם המספר הזה. יש להזין את 5 התווים האחרונים של זיהוי המכשיר (מופיע על גבי המכשיר עצמו) כדי לפתוח פעולות עבורו.
+                          </p>
+                          <Input
+                            value={speedDialDeviceConfirm}
+                            onChange={(e) =>
+                              setSpeedDialDeviceConfirm(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 5))
+                            }
+                            placeholder="5 תווים אחרונים"
+                            className="h-9 w-40 caret-blue-700"
+                            dir="ltr"
+                          />
+                        </div>
+                      )}
                       {speedDialsResult.devices.map((d) => (
                         <div key={d.device}>
                           <p className="font-medium text-slate-700" dir="ltr">{d.device}</p>
@@ -900,7 +935,7 @@ export function TechnicianDashboardPage() {
                                       </span>
                                     )}
                                     <span className="flex w-8 shrink-0 justify-end">
-                                      {requested && (
+                                      {requested && isSpeedDialDeviceConfirmed(d.device) && (
                                         <Button
                                           type="button"
                                           size="icon"
@@ -930,7 +965,7 @@ export function TechnicianDashboardPage() {
                               בקשה זו אינה בקשת הוספה או מחיקה, ולכן לא מוצגות פעולות על הקיצורים.
                             </p>
                           )}
-                          {!d.error && isSpeedDialAddRequest && (
+                          {!d.error && isSpeedDialAddRequest && isSpeedDialDeviceConfirmed(d.device) && (
                             <div className="mt-2 flex flex-wrap items-center gap-2">
                               <Input
                                 value={newSpeedDialNumber}
@@ -955,6 +990,11 @@ export function TechnicianDashboardPage() {
                                 {speedDialAddingDevice === d.device ? "מוסיף..." : "הוסף קיצור"}
                               </Button>
                             </div>
+                          )}
+                          {!d.error && isSpeedDialAddRequest && !isSpeedDialDeviceConfirmed(d.device) && (
+                            <p className="mt-2 text-xs text-slate-500">
+                              יש לאמת את זיהוי המכשיר למעלה כדי להוסיף קיצור.
+                            </p>
                           )}
                         </div>
                       ))}
